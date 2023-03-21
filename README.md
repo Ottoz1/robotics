@@ -16,9 +16,9 @@ Autonomus robot meant to collect blue boxes around a map. The robot is a lego ro
 
 ### Part 1
 
-- [ ]  Coloured box detection 
+- [ x ]  Coloured box detection 
 - [ ]  Detect numbers on boxes
-- [ ]  Distance to box
+- [ x ]  Distance to box
 - [ ]  Robot construction
 
 ### Part 2
