@@ -80,6 +80,9 @@ Mat contour_color(Mat image, int color){
         drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
     }
 
+    // Draw number of contours
+    putText(drawing, "Contours: " + to_string(contours.size()), Point(10, 30), FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 0), 2);
+
     // Get the center of the contour
     vector <Point> centroid = get_contour_center(contours);
     for (int i = 0; i < centroid.size(); i++){
