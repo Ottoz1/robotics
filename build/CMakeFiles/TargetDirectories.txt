@@ -1,0 +1,3 @@
+/home/otto/School/robotics/build/CMakeFiles/lab1.dir
+/home/otto/School/robotics/build/CMakeFiles/edit_cache.dir
+/home/otto/School/robotics/build/CMakeFiles/rebuild_cache.dir
