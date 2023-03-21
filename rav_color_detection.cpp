@@ -54,7 +54,7 @@ int main() {
 Mat contour_color(Mat image, int color){
     Mat imgHSV;
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
-    inRange(imgHSV, Scalar(0, 119, 114), Scalar(179, 175, 255), imgHSV);
+    inRange(imgHSV, Scalar(103, 199, 255), Scalar(114, 255, 255), imgHSV);
 
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
