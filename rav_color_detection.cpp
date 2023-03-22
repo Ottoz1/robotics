@@ -1,8 +1,10 @@
 #include <opencv2/opencv.hpp>
+#include <eigen3/Eigen/Dense>
 #include <iostream>
 #include <string>
 #include <stdio.h>
 #include "rav_color_detection.h"
+#include "rav_math.cpp"
 
 using namespace std;
 using namespace cv;
@@ -22,7 +24,7 @@ vector<double> time_stamps;
 
 int main(int argc, char** argv) {
 
-   for (int i = 0; i < argc; i++){
+    for (int i = 0; i < argc; i++){
         if (strcmp(argv[i], "-s") == 0){
             SCALER = atoi(argv[i + 1]);
             cout << "Scaler: " << SCALER << endl;
@@ -48,7 +50,7 @@ int main(int argc, char** argv) {
             cout << "To get the HSV values of a color, run hsv_threshold_picker.py" << endl; 
             return 0;
         }
-   }
+    }
 
    Mat img;//Declaring a matrix to load the frames//
 
@@ -121,7 +123,7 @@ int main(int argc, char** argv) {
 
         contour_distance_to_image_center(contours, centroid, img_center);
 
-        // print time
+        // Calculate execution time and store it in a vector
         double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
         time_stamps.push_back(time_taken);
 

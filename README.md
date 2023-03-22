@@ -25,7 +25,7 @@ Autonomus robot meant to collect blue boxes around a map. The robot is a lego ro
 
 - [ ]  Cox line fit
 
-## Parameters
+### Parameters
 
 | Parameter      | Type     | Description                       | Default                 |
 | :--------      | :------- | :-------------------------------- | :---------------------- |

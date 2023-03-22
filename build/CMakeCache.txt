@@ -145,7 +145,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=DisplayImage
+CMAKE_PROJECT_NAME:STATIC=lab1
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -218,8 +218,20 @@ DisplayImage_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 DisplayImage_SOURCE_DIR:STATIC=/home/otto/School/robotics
 
+//The directory containing a CMake configuration file for Eigen3.
+Eigen3_DIR:PATH=/usr/local/share/eigen3/cmake
+
 //The directory containing a CMake configuration file for OpenCV.
 OpenCV_DIR:PATH=/usr/local/lib/cmake/opencv4
+
+//Value Computed by CMake
+lab1_BINARY_DIR:STATIC=/home/otto/School/robotics/build
+
+//Value Computed by CMake
+lab1_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+lab1_SOURCE_DIR:STATIC=/home/otto/School/robotics
 
 
 ########################
