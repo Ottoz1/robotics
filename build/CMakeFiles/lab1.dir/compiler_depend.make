@@ -412,8 +412,11 @@ CMakeFiles/lab1.dir/rav_color_detection.cpp.o: ../rav_color_detection.cpp \
   /usr/local/include/opencv4/opencv2/stitching/detail/camera.hpp \
   /usr/local/include/opencv4/opencv2/video.hpp \
   /usr/local/include/opencv4/opencv2/video/tracking.hpp \
-  /usr/local/include/opencv4/opencv2/video/background_segm.hpp
+  /usr/local/include/opencv4/opencv2/video/background_segm.hpp \
+  ../rav_color_detection.h
 
+
+../rav_color_detection.h:
 
 /usr/local/include/opencv4/opencv2/video/tracking.hpp:
 

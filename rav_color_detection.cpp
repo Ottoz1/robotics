@@ -2,11 +2,12 @@
 #include <iostream>
 #include <string>
 #include <stdio.h>
+#include "rav_color_detection.h"
 
 using namespace std;
 using namespace cv;
 
-vector<vector<Point>> contour_color(Mat image, int color);
+vector<vector<Point>> get_contour(Mat image);
 vector <Point> get_contour_center(vector<vector<Point> > contours);
 int distance_to_center(Point center, Point centroid);
 vector<vector<Point>> contour_polygons(vector<vector<Point>> contours);
@@ -14,9 +15,44 @@ vector<vector<Point>> filter_contours(vector<vector<Point>> contours);
 void contour_distance_to_image_center(vector<vector<Point>> contours, vector<Point> centroid, Point center);
 
 int SCALER = 2;
+Scalar HSV_LOW_BOUND = Scalar(99, 130, 177);
+Scalar HSV_HIGH_BOUND = Scalar(117, 255, 255);
 
-int main() {
+vector<double> time_stamps;
+
+int main(int argc, char** argv) {
+
+   for (int i = 0; i < argc; i++){
+        if (strcmp(argv[i], "-s") == 0){
+            SCALER = atoi(argv[i + 1]);
+            cout << "Scaler: " << SCALER << endl;
+        }
+        else if (strcmp(argv[i], "--scale") == 0){
+            SCALER = atoi(argv[i + 1]);
+            cout << "Scaler: " << SCALER << endl;
+        }
+        else if (strcmp(argv[i], "--hsv-low") == 0){
+            HSV_LOW_BOUND = Scalar(atoi(argv[i + 1]), atoi(argv[i + 2]), atoi(argv[i + 3]));
+            cout << "HSV low bound: " << HSV_LOW_BOUND << endl;
+        }
+        else if (strcmp(argv[i], "--hsv-high") == 0){
+            HSV_HIGH_BOUND = Scalar(atoi(argv[i + 1]), atoi(argv[i + 2]), atoi(argv[i + 3]));
+            cout << "HSV high bound: " << HSV_HIGH_BOUND << endl;
+        }
+        else if (strcmp(argv[i], "-h") == 0){
+            cout << "Usage: rav_color_detection [OPTION]..." << endl;
+            cout << "Options:\n" << endl;
+            cout << "  -s, --scale  <int>              Scale the image down by a factor of <int>\n" << endl;
+            cout << "  --hsv-low    <int> <int> <int>  Set the lower bound of the HSV filter\n" << endl;
+            cout << "  --hsv-high   <int> <int> <int>  Set the upper bound of the HSV filter\n" << endl;
+            cout << "To get the HSV values of a color, run hsv_threshold_picker.py" << endl; 
+            return 0;
+        }
+   }
+
    Mat img;//Declaring a matrix to load the frames//
+
+   time_t start, end;//time for image processing
 
    //Declaring the video to show the video//
    namedWindow("Video Player");
@@ -41,6 +77,8 @@ int main() {
       }
     //---------------------------Image Processing---------------------------------//
 
+        start = clock();
+
         vector<vector<Point>> contours;
         vector<vector<Point>> contours_poly;
         vector<Point> centroid;
@@ -50,7 +88,8 @@ int main() {
 
         resize(img, img_scaled,  Size(img.cols / SCALER, img.rows / SCALER), 0, 0, INTER_LINEAR);
 
-        contours = contour_color(img_scaled, 0);
+        contours = get_contour(img_scaled);
+
         img_center = Point(img.cols / 2, img.rows / 2);
 
         // Filter contours
@@ -78,7 +117,13 @@ int main() {
         Point center = Point(drawing.cols / 2, drawing.rows / 2);
         circle(drawing, center, 5, Scalar(0, 255, 0), -1);
         
+        end = clock();
+
         contour_distance_to_image_center(contours, centroid, img_center);
+
+        // print time
+        double time_taken = double(end - start) / double(CLOCKS_PER_SEC);
+        time_stamps.push_back(time_taken);
 
     //----------------------------------------------------------------------------//
 
@@ -87,7 +132,15 @@ int main() {
       //Allowing 25 milliseconds frame processing time and initiating break condition//
       char c = (char)waitKey(25);
       if (c == 27){ //If 'Esc' is entered break the loop//
-         break;
+
+        double execution_time = 0;
+        for (int i = 0; i < time_stamps.size(); i++){
+            execution_time += time_stamps[i];
+        }
+        execution_time /= time_stamps.size();
+        cout << "Average execution time: " << execution_time << " sec" << endl;
+
+        break;
       }
    }
    cap.release();//Releasing the buffer memory//
@@ -104,10 +157,10 @@ vector<vector<Point>> contour_polygons(vector<vector<Point>> contours){
     return contours_poly;
 }
 
-vector<vector<Point>> contour_color(Mat image, int color){
+vector<vector<Point>> get_contour(Mat image){
     Mat imgHSV;
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
-    inRange(imgHSV, Scalar(99, 130, 177), Scalar(117, 255, 255), imgHSV);
+    inRange(imgHSV, HSV_LOW_BOUND, HSV_HIGH_BOUND, imgHSV);
 
     vector<vector<Point>> contours;
     vector<Vec4i> hierarchy;
@@ -132,7 +185,7 @@ vector<vector<Point>> filter_contours(vector<vector<Point>> contours){
 
     for (int i = 0; i < contours.size(); i++){
         int area = contourArea(contours[i]);
-        if (area > 100){
+        if (area > 100/SCALER){
             contours_new.push_back(contours[i]);
         }
     }
