@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/otto/School/robotics/rav_color_detection.cpp" "CMakeFiles/lab1.dir/rav_color_detection.cpp.o" "gcc" "CMakeFiles/lab1.dir/rav_color_detection.cpp.o.d"
+  "/home/yonni/Desktop/robotics/rav_color_detection.cpp" "CMakeFiles/lab1.dir/rav_color_detection.cpp.o" "gcc" "CMakeFiles/lab1.dir/rav_color_detection.cpp.o.d"
   )
 
 # Targets to which this target links.
