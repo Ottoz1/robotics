@@ -4,7 +4,6 @@
 #include <string>
 #include <stdio.h>
 #include "rav_color_detection.h"
-#include "rav_math.cpp"
 
 using namespace std;
 using namespace cv;
