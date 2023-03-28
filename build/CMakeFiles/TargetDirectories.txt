@@ -1,3 +1,0 @@
-/home/yonni/Desktop/robotics/build/CMakeFiles/lab1.dir
-/home/yonni/Desktop/robotics/build/CMakeFiles/edit_cache.dir
-/home/yonni/Desktop/robotics/build/CMakeFiles/rebuild_cache.dir
