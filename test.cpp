@@ -5,8 +5,7 @@ using namespace std;
 using namespace cv;
 
 // ####### USEFUL FUNCTIONS #######
-Mat find_countours(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_contour_ptr);
-Mat find_number(Mat bin_img, vector<Point>* largest_contour_ptr, vector<Point> area_of_interest);
+Mat find_countours(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_contour_ptr, vector<Point>* second_largest_contour_ptr);
 // ####### END OF USEFUL FUNCTIONS #######
 
 int SCALER = 2;
@@ -27,24 +26,21 @@ int main() {
 
     // Filter the image and keep the largest contour
     vector<Point> largest_contour;
-    Mat binary_img = find_countours(HSV_LOW_BOUND, HSV_HIGH_BOUND, original_img, &largest_contour);
-    //Mat cropped_binary_img = original_img(boundingRect(largest_contour));
-
     vector<Point> number_contour;
-    Mat number_img = find_number(binary_img, &number_contour, largest_contour);
+    find_countours(HSV_LOW_BOUND, HSV_HIGH_BOUND, original_img, &largest_contour, &number_contour);
 
-    // Draw the largest contour on the image
-    drawContours(original_img, vector<vector<Point>>(1, number_contour), 0, Scalar(0, 0, 255), 2);
-
-    // Display the image with the highlighted contour
-    imshow("Image", binary_img);
+    // Draw the largest contour and the second largest contour within it
+    drawContours(original_img, vector<vector<Point>>(1, largest_contour), 0, Scalar(0, 0, 255), 2);
+    drawContours(original_img, vector<vector<Point>>(1, number_contour), 0, Scalar(0, 255, 0), 2);
+    
+    imshow("Image", original_img);
     waitKey(0);
 
     return 0;
 }
 
 // This function runs the images through the filter and returns the filtered image
-Mat find_countours(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_contour_ptr) {
+Mat find_countours(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_contour_ptr, vector<Point>* second_largest_contour_ptr) {
     Mat imgHSV;
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
     inRange(imgHSV, lower, upper, imgHSV);
@@ -54,61 +50,43 @@ Mat find_countours(Scalar lower, Scalar upper, Mat image, vector<Point>* largest
     vector<Vec4i> hierarchy;
     findContours(imgHSV, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-    if (contours.size() == 0){
+    if (contours.size() < 2){   // We need at least a box and a number on it, two contours
         printf("No contours found between the given HSV color bounds");
+        return imgHSV;
     }
 
-    // Remove all contours except the largest one
-    int largest_contour_index = 0;
-    int largest_area = 0;
-    for (int i = 0; i < contours.size(); i++){
-        double a = contourArea(contours[i], false);
-        if (a > largest_area){
-            largest_area = a;
-            largest_contour_index = i;
-        }
-    }
-
-    // Remove all other contours from the image
-    for (int i = 0; i < contours.size(); i++){
-        if (i != largest_contour_index){
-            drawContours(imgHSV, contours, i, Scalar(0, 0, 0), -1);
-        }
-    }
-
-    *largest_contour_ptr = contours[largest_contour_index];
-    return imgHSV;
-}
-
-// This function finds the biggest black spot in a binary image
-Mat find_number(Mat bin_img, vector<Point>* largest_contour_ptr, vector<Point> area_of_interest) {
-    // Get black contours
-    vector<vector<Point>> contours;
-    vector<Vec4i> hierarchy;
-    findContours(bin_img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-
+    // Find the largest contour (the box)
     int largest_contour_index = 0;
     int largest_area = 0;
     for (int i = 0; i < contours.size(); i++) {
-        // check if the contour is black
-        Scalar meanColor = mean(bin_img, contours[i]);
-        if (meanColor[0] != 0) {
-            continue;
-        }
-
-        // check if the contour is inside the area of interest
-        if (pointPolygonTest(area_of_interest, contours[i][0], false) == -1) {
-            continue;
-        }
-
-        // check if the contour area is the largest
-        double a = contourArea(contours[i], false);
-        if (a > largest_area) {
-            largest_area = a;
+        double area = contourArea(contours[i]);
+        if (area > largest_area) {
+            largest_area = area;
             largest_contour_index = i;
+        }
+    }
+    vector<Point> largest_contour = contours[largest_contour_index];
+
+    // Find the second largest contour (the number) and make sure it's inside the box
+    int second_largest_contour_index = 0;
+    int second_largest_area = 0;
+    for (int i = 0; i < contours.size(); i++) {
+        double area = contourArea(contours[i]);
+        if (area > second_largest_area && area < largest_area) {
+
+            // Check if the contour is inside the box
+            vector<Point> contour = contours[i];
+            Point point_on_contour = contour[0];
+            if (pointPolygonTest(largest_contour, point_on_contour, false) < 0) {
+                continue;
+            }
+
+            second_largest_area = area;
+            second_largest_contour_index = i;
         }
     }
 
     *largest_contour_ptr = contours[largest_contour_index];
-    return bin_img;
+    *second_largest_contour_ptr = contours[second_largest_contour_index];
+    return imgHSV;
 }
