@@ -1,47 +1,29 @@
 #include "vision.hpp"
 
-void maien(Mat image, Scalar lower, Scalar upper)
+void process_image(Mat image, Scalar lower, Scalar upper, int* predicted_number, vector<Point>* box_contour_ptr, vector<Point>* number_contour_ptr, vector<Point>* inner_number_contour_ptr, float* D)
 {
-    time_t start, end;//time for image processing
-
-    // Filter the image and keep the largest contour
-    vector<Point> largest_contour;  // Biggest contour in the image (suppose to be the box)
+    // Find the 3 most important contours
+    vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
     vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
-    vector<Point> third_contour;    // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
-    start = clock();
-    int predicted_number = process_image(lower, upper, image, &largest_contour, &number_contour, &third_contour);
-    Point contcent; // Center of the contour    (Optional for visualizing the center of the contour)
-    Point imgcent;  // Center of the image  (Optional for visualizing the center of the image)
-    float d = find_d(image, largest_contour, &contcent, &imgcent);
-    end = clock();
-    
-    printf("Predicted number: %d\n", predicted_number);
-    printf("Time taken: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
-    printf("d: %f\n", d);
+    vector<Point> inner_number_contour;    // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
+    find_important_contours(lower, upper, image, &box_contour, &number_contour, &inner_number_contour);
 
-    // Draw the largest contour and the second largest contour within it
-    drawContours(image, vector<vector<Point>>(1, largest_contour), 0, Scalar(45, 255, 255), 2);
-    drawContours(image, vector<vector<Point>>(1, number_contour), 0, Scalar(0, 255, 0), 2);
-    drawContours(image, vector<vector<Point>>(1, third_contour), 0, Scalar(0, 0, 255), 2);
+    // Predict the number based on the ratio of the inner number to the outer number areas
+    int pred = predict_number(number_contour, inner_number_contour);
 
-    // Draw the center of the contour and the center of the image as filled circles
-    circle(image, contcent, 5, Scalar(0, 0, 0), FILLED);
-    circle(image, imgcent, 5, Scalar(0, 255, 0), FILLED);
+    // Find the D value, a number between -1 and 1 in the X direction
+    float d = find_d(image, box_contour);
 
-    // Draw predicted number on the image (with text)
-    Rect box = boundingRect(largest_contour);
-    Point above_box = Point(box.x + box.width / 2, box.y - 10);
-    String message = "It's a " + to_string(predicted_number);
-    putText(image, message, above_box, FONT_HERSHEY_SIMPLEX, 2, Scalar(0, 0, 255), 2);
-    
-    // Show the image
-    namedWindow("Image", WINDOW_AUTOSIZE);
-    imshow("Image", image);
-    waitKey(0);
+    // Output the results
+    *predicted_number = pred;
+    *box_contour_ptr = box_contour;
+    *number_contour_ptr = number_contour;
+    *inner_number_contour_ptr = inner_number_contour;
+    *D = d;
 }
 
 // This function runs the images through the filter and returns the filtered image
-int process_image(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_contour_ptr, vector<Point>* second_largest_contour_ptr, vector<Point>* third_largest_contour_ptr) {
+void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point>* box_countour_ptr, vector<Point>* number_contour_ptr, vector<Point>* inner_number_contour_ptr) {
     Mat imgHSV;
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
     inRange(imgHSV, lower, upper, imgHSV);
@@ -53,74 +35,67 @@ int process_image(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_
 
     if (contours.size() < 2){   // We need at least a box and a number on it, two contours
         printf("No contours found between the given HSV color bounds");
-        return -1;
+        return;
     }
 
     // Find the largest contour (the box)
+    int box_index = biggest_within(contours, vector<Point>());
+    vector<Point> largest_contour = contours[box_index];
+
+    // Find the second largest contour (the number) and make sure it's inside the box
+    int second_largest_contour_index = biggest_within(contours, largest_contour);
+    vector<Point> second_largest_contour = contours[second_largest_contour_index];
+
+    // Find the third largest contour (the number) and make sure it's inside number (second largest contour)
+    int third_largest_contour_index = biggest_within(contours, second_largest_contour);
+    vector<Point> third_largest_contour = contours[third_largest_contour_index];
+
+    *box_countour_ptr = largest_contour;
+    *number_contour_ptr = second_largest_contour;
+    *inner_number_contour_ptr = third_largest_contour;
+}
+
+// This function finds the biggest contour within another contour
+// If "within" is empty, it will find the biggest contour in "contours" list
+// This function is used by "find_important_contours" to find the box, nummer within the box, and the inner_number within the number
+int biggest_within(vector<vector<Point>> contours, vector<Point> within)
+{
     int largest_contour_index = 0;
     int largest_area = 0;
     for (int i = 0; i < contours.size(); i++) {
         double area = contourArea(contours[i]);
         if (area > largest_area) {
-            largest_area = area;
-            largest_contour_index = i;
-        }
-    }
-    vector<Point> largest_contour = contours[largest_contour_index];
-
-    // Find the second largest contour (the number) and make sure it's inside the box
-    int second_largest_contour_index = 0;
-    int second_largest_area = 0;
-    for (int i = 0; i < contours.size(); i++) {
-        double area = contourArea(contours[i]);
-        if (area > second_largest_area && area < largest_area) {
-
-            // Check if the contour is inside the box
-            vector<Point> contour = contours[i];
-            Point point_on_contour = contour[0];
-            if (pointPolygonTest(largest_contour, point_on_contour, false) < 0) {
-                continue;
+            if (within.empty()) {
+                largest_area = area;
+                largest_contour_index = i;
             }
-
-            second_largest_area = area;
-            second_largest_contour_index = i;
-        }
-    }
-    vector<Point> second_largest_contour = contours[second_largest_contour_index];
-
-    // Find the third largest contour (the number) and make sure it's inside number (second largest contour)
-    int third_largest_contour_index = 0;
-    int third_largest_area = 0;
-    for (int i = 0; i < contours.size(); i++) {
-        double area = contourArea(contours[i]);
-        if (area > third_largest_area && area < second_largest_area) {
-
-            // Check if the contour is inside the box
-            vector<Point> contour = contours[i];
-            Point point_on_contour = contour[0];
-            if (pointPolygonTest(second_largest_contour, point_on_contour, false) < 0) {
-                continue;
+            else {
+                vector<Point> contour = contours[i];
+                Point point_on_contour = contour[0];
+                if (within == contour)  // Don't count the contour we're checking against
+                    continue;
+                if (pointPolygonTest(within, point_on_contour, false) > 0) {
+                    largest_area = area;
+                    largest_contour_index = i;
+                }
             }
-
-            third_largest_area = area;
-            third_largest_contour_index = i;
         }
     }
-    vector<Point> third_largest_contour = contours[third_largest_contour_index];
+    return largest_contour_index;
+}
 
-    *largest_contour_ptr = largest_contour;
-    *second_largest_contour_ptr = second_largest_contour;
-    *third_largest_contour_ptr = third_largest_contour;
-
-    float ratio = (float)third_largest_area / (float)second_largest_area;
-    printf("Ratio: %f\n", ratio);
+int predict_number(vector<Point> number_contour, vector<Point> inner_number_contour)
+{
+    float inner_area = (float)contourArea(inner_number_contour);    // if it's 1, this will be 0 or close to 0
+    float number_area = (float)contourArea(number_contour);
+    float ratio = inner_area / number_area;
     if (ratio < 0.1)
         return 1;
     else return 0;
 }
 
 // This function finds the normalized distance between the center of the contour and the center of the image in the X direction
-float find_d(Mat img, vector<Point> contour, Point *contour_center, Point *image_center) {
+float find_d(Mat img, vector<Point> contour) {
     // Find the center of the contour and the center of the image
     Rect box = boundingRect(contour);
     Point cont_center = Point(box.x + box.width / 2, box.y + box.height / 2);
@@ -136,7 +111,32 @@ float find_d(Mat img, vector<Point> contour, Point *contour_center, Point *image
     // Normalize the distance so that the distance is in the range [-1, 1]
     float d = relative_x / x_img;
 
-    *contour_center = cont_center;
-    *image_center = img_center;
     return d;
+}
+
+void visualize_results(Mat image, vector<Point> largest_contour, vector<Point> number_contour, vector<Point> third_contour, int predicted_number)
+{
+    Mat img = image.clone();    // Make a copy of the image so we don't modify the original
+
+    // Draw the contours on the image
+    drawContours(img, vector<vector<Point>>(1, largest_contour), 0, Scalar(0, 255, 0), 2);
+    drawContours(img, vector<vector<Point>>(1, number_contour), 0, Scalar(255, 0, 0), 2);
+    drawContours(img, vector<vector<Point>>(1, third_contour), 0, Scalar(0, 0, 255), 2);
+
+    // Draw predicted number on the image above the box
+    char predicted = (char)(predicted_number + 48);
+    Rect box = boundingRect(largest_contour);
+    Point above_box = Point(box.x + box.width / 2, box.y - 10);
+    putText(img, string(1, predicted), above_box, FONT_HERSHEY_SIMPLEX, 1, Scalar(0, 0, 0), 2);
+
+    // Draw the center of the contour and the center of the image as filled circles
+    Point contcent = Point(box.x + box.width / 2, box.y + box.height / 2);
+    Point imgcent = Point(img.cols / 2, img.rows / 2);
+    circle(img, contcent, 5, Scalar(0, 0, 0), FILLED);
+    circle(img, imgcent, 5, Scalar(0, 255, 0), FILLED);
+
+    // Show the image
+    namedWindow("Image", WINDOW_AUTOSIZE);
+    imshow("Image", img);
+    waitKey(0);
 }

@@ -3,12 +3,25 @@
 int main()
 {
     // Load the image
-    Mat image = imread("../img/1.jpg");
+    Mat image = imread("../img/3.jpg");
     resize(image, image, Size(1280, 720));
 
     // Set the HSV color bounds for the filter
     Scalar lower = Scalar(41, 50, 0);
     Scalar upper = Scalar(115, 255, 240);
 
-    maien(image, lower, upper);
+    // Process the image
+    vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
+    vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
+    vector<Point> inner_number_contour;   // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
+    int predicted_number;   // Predicted number on the box
+    float d;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
+    process_image(image, lower, upper, &predicted_number, &box_contour, &number_contour, &inner_number_contour, &d);
+
+    // Print stuff
+    cout << "Predicted number: " << predicted_number << endl;
+    cout << "d: " << d << endl;
+
+    // Show the image with the contours and predicted number
+    visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
 }
