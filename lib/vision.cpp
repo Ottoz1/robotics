@@ -1,27 +1,7 @@
-#include <opencv2/opencv.hpp>
-#include <iostream>
+#include "vision.hpp"
 
-using namespace std;
-using namespace cv;
-
-// ####### USEFUL FUNCTIONS #######
-int process_image(Scalar lower, Scalar upper, Mat image, vector<Point>* largest_contour_ptr, vector<Point>* second_largest_contour_ptr, vector<Point>* third_largest_contour_ptr = NULL);
-float find_d(Mat img, vector<Point> contour, Point* contcent, Point* imgcent);
-// ####### END OF USEFUL FUNCTIONS #######
-
-int SCALER = 2;
-Scalar HSV_LOW_BOUND = Scalar(41, 50, 0);
-Scalar HSV_HIGH_BOUND = Scalar(115, 255, 240);
-
-int main() {
-    // Load an image from file and resize it (resize should be changed later)
-    Mat original_img = imread("../img/1.jpg", IMREAD_COLOR);
-    if (original_img.empty()) {
-        cout << "Error loading image" << endl;
-        return -1;
-    }
-    resize(original_img, original_img, Size(1280, 720));
-
+void maien(Mat image, Scalar lower, Scalar upper)
+{
     time_t start, end;//time for image processing
 
     // Filter the image and keep the largest contour
@@ -29,10 +9,10 @@ int main() {
     vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
     vector<Point> third_contour;    // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
     start = clock();
-    int predicted_number = process_image(HSV_LOW_BOUND, HSV_HIGH_BOUND, original_img, &largest_contour, &number_contour, &third_contour);
+    int predicted_number = process_image(lower, upper, image, &largest_contour, &number_contour, &third_contour);
     Point contcent; // Center of the contour    (Optional for visualizing the center of the contour)
     Point imgcent;  // Center of the image  (Optional for visualizing the center of the image)
-    float d = find_d(original_img, largest_contour, &contcent, &imgcent);
+    float d = find_d(image, largest_contour, &contcent, &imgcent);
     end = clock();
     
     printf("Predicted number: %d\n", predicted_number);
@@ -40,26 +20,24 @@ int main() {
     printf("d: %f\n", d);
 
     // Draw the largest contour and the second largest contour within it
-    drawContours(original_img, vector<vector<Point>>(1, largest_contour), 0, Scalar(45, 255, 255), 2);
-    drawContours(original_img, vector<vector<Point>>(1, number_contour), 0, Scalar(0, 255, 0), 2);
-    drawContours(original_img, vector<vector<Point>>(1, third_contour), 0, Scalar(0, 0, 255), 2);
+    drawContours(image, vector<vector<Point>>(1, largest_contour), 0, Scalar(45, 255, 255), 2);
+    drawContours(image, vector<vector<Point>>(1, number_contour), 0, Scalar(0, 255, 0), 2);
+    drawContours(image, vector<vector<Point>>(1, third_contour), 0, Scalar(0, 0, 255), 2);
 
     // Draw the center of the contour and the center of the image as filled circles
-    circle(original_img, contcent, 5, Scalar(0, 0, 0), FILLED);
-    circle(original_img, imgcent, 5, Scalar(0, 255, 0), FILLED);
+    circle(image, contcent, 5, Scalar(0, 0, 0), FILLED);
+    circle(image, imgcent, 5, Scalar(0, 255, 0), FILLED);
 
     // Draw predicted number on the image (with text)
     Rect box = boundingRect(largest_contour);
     Point above_box = Point(box.x + box.width / 2, box.y - 10);
     String message = "It's a " + to_string(predicted_number);
-    putText(original_img, message, above_box, FONT_HERSHEY_SIMPLEX, 2, Scalar(0, 0, 255), 2);
+    putText(image, message, above_box, FONT_HERSHEY_SIMPLEX, 2, Scalar(0, 0, 255), 2);
     
     // Show the image
     namedWindow("Image", WINDOW_AUTOSIZE);
-    imshow("Image", original_img);
+    imshow("Image", image);
     waitKey(0);
-
-    return 0;
 }
 
 // This function runs the images through the filter and returns the filtered image
