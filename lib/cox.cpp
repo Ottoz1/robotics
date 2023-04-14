@@ -1,6 +1,6 @@
 #include "cox.hpp"
 
-void cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
+VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
 {
     // The translation and rotation to be returned
     float ddx = 0.0f;
@@ -15,15 +15,11 @@ void cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
 
     // main loop
     for (int i = 0; i < max_iter; i++)
-    {   cout << "iteration: " << i << endl;
-        // Plot the points and lines each iteration
-        string title = "iteration:_" + to_string(i);
-        //plot(pts, line_segments, (char*)title.c_str());
-
+    {
         // Find the closest line segment for each point
         MatrixXf distances = MatrixXf::Zero(pts.rows(), 1);
         MatrixXf new_normals = MatrixXf::Zero(pts.rows(), 2);
-        MatrixXf targets = assign_points_to_lines(points, line_segments, normals, &distances, &new_normals);
+        MatrixXf targets = assign_points_to_lines(pts, line_segments, normals, &distances, &new_normals);
 
         // Setup the variables of the linear system of equations (least squares problem)
         VectorXf y = get_signed_distance(pts, targets, new_normals); // The signed distance from the points to the line segments
@@ -58,25 +54,21 @@ void cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         dda += b(2);
 
         // Update the points with the new translation and rotation
-        MatrixXf T {
-            {cos(dda), -sin(dda), ddx},
-            {sin(dda), cos(dda), ddy},
-            {0, 0, 1}
-        };
-        MatrixXf temp_pts = pts.rowwise().homogeneous();
-        MatrixXf temp_pts2 = temp_pts * T.transpose();
-        pts = temp_pts2.leftCols(2);
+        VectorXf transformation(3);
+        transformation << ddx, ddy, dda;
+        pts = transform_points(points, transformation);
 
         // Check if the algorithm has converged
         if (b.norm() < 0.0001f)
         {
-            cout << "Converged after " << i << " iterations" << endl;
-            cout << "Translation: (" << ddx << ", " << ddy << ")" << endl;
-            cout << "Rotation: " << dda << endl;
-            break;
+            VectorXf result(3);
+            result << ddx, ddy, dda;
+            return result;
         }
-        //cout << "Iteration: " << i << "ddx" << ddx << "ddy" << ddy << "dda" << dda << endl;
     }
+    VectorXf result(3);
+    result << ddx, ddy, dda;
+    return result;
 }
 
 MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixXf normals, MatrixXf *distances, MatrixXf *new_normals_ptr)
@@ -106,7 +98,6 @@ MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixX
         dists(i) = min_dist;    // Update the distance matrix
         targets.row(i) = line_segments.row(min_index);   // Update the target matrix
         new_normals.row(i) = normals.row(min_index);    // Update the normal matrix
-        cout << min_index << endl;
     }
 
     *distances = dists; // Update the distances pointer
@@ -267,6 +258,26 @@ MatrixXf arrayToMatrix(float* data, int numRows, int numCols)
     }
     
     return myMatrix;
+}
+
+MatrixXf transform_points(MatrixXf points, VectorXf transformation)
+{
+    // points: Matrix with 2 columns (x, y) and n rows (n points)
+    // transformation: Vector with 3 elements (x, y, theta)
+    // output: Matrix with 2 columns (x, y) and n rows (n transformed points)
+    float ddx = transformation(0);
+    float ddy = transformation(1);
+    float dda = transformation(2);
+
+    MatrixXf T {
+            {cos(dda), -sin(dda), ddx},
+            {sin(dda), cos(dda), ddy},
+            {0, 0, 1}
+        };
+    MatrixXf temp_pts = points.rowwise().homogeneous();
+    MatrixXf temp_pts2 = temp_pts * T.transpose();
+    MatrixXf pts = temp_pts2.leftCols(2);
+    return pts;
 }
 
 MatrixXf generate_data() {

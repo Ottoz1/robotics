@@ -29,10 +29,15 @@ void vision_test()
 
 void cox_test()
 {
-    MatrixXf points = generate_data();
-    MatrixXf line_segments = generate_lines();
-    plot(points, line_segments, "Example_points_with_lines");
-    cox_linefit(points, line_segments, 3);
+    MatrixXf points = generate_data();  // Generate some random points
+    MatrixXf line_segments = generate_lines();  // Generate lines
+
+    plot(points, line_segments, "BEFORE_COX");
+    VectorXf transformation = cox_linefit(points, line_segments, 100);
+    points = transform_points(points, transformation);
+    plot(points, line_segments, "AFTER_COX");
+
+    cout << "Transformation: \n" << transformation << endl;
 }
 
 int main()
