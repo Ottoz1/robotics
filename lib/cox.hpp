@@ -4,9 +4,9 @@
 
 using namespace std;
 using namespace Eigen;
-using namespace cv;
 
-void cox_linefit();
+void cox_linefit(MatrixXf points, MatrixXf line_segments);
 MatrixXf generate_data();
 MatrixXf arrayToMatrix(float* data, int numRows, int numCols);
-void plot(MatrixXf points);
+void plot(MatrixXf points, MatrixXf lines, char* title);
+MatrixXf generate_lines();

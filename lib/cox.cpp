@@ -1,15 +1,18 @@
 #include "cox.hpp"
 
-void cox_linefit()
+void cox_linefit(MatrixXf points, MatrixXf line_segments)
 {
-    MatrixXf points = generate_data();
-    // print the matrix
-    //cout << "points:" << endl << points << endl;
-    plot(points);
+    char* title = "Example_points_with_lines";
+    plot(points, line_segments, title);
 }
 
-void plot(MatrixXf points)
+void plot(MatrixXf points, MatrixXf lines, char* title)
 {
+    // Assign value to title if it is empty
+    if (title == NULL) {
+        title = "NO_TITLE_PROVIDED";
+    }
+
     // Convert the MatrixXf to arrays
     float* x = points.col(0).data();
     float* y = points.col(1).data();
@@ -19,13 +22,49 @@ void plot(MatrixXf points)
     std::string cmd = "python3 ../lib/plotter.py ";
     for (int i = 0; i < n; i++) {
         if (i == n-1)
-            cmd += std::to_string(x[i]) + "," + std::to_string(y[i]);
+            cmd += std::to_string(x[i]) + "," + std::to_string(y[i]) + " ";
         else
             cmd += std::to_string(x[i]) + "," + std::to_string(y[i]) + ",";
     }
 
+    float* x1 = lines.col(0).data();
+    float* y1 = lines.col(1).data();
+    float* x2 = lines.col(2).data();
+    float* y2 = lines.col(3).data();
+    int m = lines.rows();
+    for (int i = 0; i < m; i++) {
+        if (i == m-1)
+            cmd += std::to_string(x1[i]) + "," + std::to_string(y1[i]) + "," + std::to_string(x2[i]) + "," + std::to_string(y2[i]) + " ";
+        else
+            cmd += std::to_string(x1[i]) + "," + std::to_string(y1[i]) + "," + std::to_string(x2[i]) + "," + std::to_string(y2[i]) + ",";
+    }
+
+    // Make title 
+    cmd += std::string(title);
+
     // Call the Python script using the system() function
     system(cmd.c_str());
+}
+
+MatrixXf generate_lines() {
+    // Corner points of the box
+    float data[4][2] = {
+        {0, 0},
+        {0, 100},
+        {200, 100},
+        {200, 0}
+    };
+
+    // Connect the corner points to form a line
+    MatrixXf lines(4, 4);
+    for (int i = 0; i < 4; i++) {
+        lines(i, 0) = data[i][0];
+        lines(i, 1) = data[i][1];
+        lines(i, 2) = data[(i+1)%4][0];
+        lines(i, 3) = data[(i+1)%4][1];
+    }
+
+    return lines;
 }
 
 MatrixXf generate_data() {

@@ -30,6 +30,8 @@ void vision_test()
 int main()
 {
     //vision_test();
-    cox_linefit();
+    MatrixXf points = generate_data();
+    MatrixXf line_segments = generate_lines();
+    cox_linefit(points, line_segments);
     return 0;
 }
