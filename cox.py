@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-corner_points = np.array([[0, 0], [0, 1], [2, 1], [2, 0]])
+corner_points = np.array([[0, 0], [0, 1], [2, 1], [2, 0]]) * 100
 plt.plot(corner_points[:, 0], corner_points[:, 1], 'bo')
 
 # Make a square from the corner points

@@ -1,6 +1,7 @@
 #include "lib/vision.hpp"
+#include "lib/cox.hpp"
 
-int main()
+void vision_test()
 {
     // Load the image
     Mat image = imread("../img/3.jpg");
@@ -24,4 +25,11 @@ int main()
 
     // Show the image with the contours and predicted number
     visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
+}
+
+int main()
+{
+    //vision_test();
+    cox_linefit();
+    return 0;
 }
