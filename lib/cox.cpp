@@ -15,16 +15,71 @@ void cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
 
     // main loop
     for (int i = 0; i < max_iter; i++)
-    {
+    {   cout << "iteration: " << i << endl;
+        // Plot the points and lines each iteration
+        string title = "iteration:_" + to_string(i);
+        //plot(pts, line_segments, (char*)title.c_str());
+
         // Find the closest line segment for each point
         MatrixXf distances = MatrixXf::Zero(pts.rows(), 1);
-        MatrixXf targets = assign_points_to_lines(points, line_segments, normals, &distances);
-        cout << "targets: " << endl << targets << endl;
-    }
+        MatrixXf new_normals = MatrixXf::Zero(pts.rows(), 2);
+        MatrixXf targets = assign_points_to_lines(points, line_segments, normals, &distances, &new_normals);
 
+        // Setup the variables of the linear system of equations (least squares problem)
+        VectorXf y = get_signed_distance(pts, targets, new_normals); // The signed distance from the points to the line segments
+        VectorXf xi1 = new_normals.col(0);  // The x component of the normal vector of the line segments
+        VectorXf xi2 = new_normals.col(1);  // The y component of the normal vector of the line segments
+
+        // Figure out xi3 according to the Cox paper
+        VectorXf vm = VectorXf::Zero(2);   // The mean of the points
+        vm(0) = pts.col(0).mean();
+        vm(1) = pts.col(1).mean();
+        MatrixXf diff = pts.rowwise() - vm.transpose(); // Subtract the mean from the points
+        MatrixXf m {
+            {0, -1},
+            {1, 0}
+        };
+        diff = m * diff.transpose();    // Multiply the difference matrix with the rotation matrix
+        MatrixXf temp = diff.transpose();    // The z component of the normal vector of the line segments
+        VectorXf xi3 = (new_normals.array() * temp.array()).rowwise().sum();
+
+        // Solve the linear system of equations
+        MatrixXf A = MatrixXf::Zero(pts.rows(), 3);
+        A.col(0) = xi1;
+        A.col(1) = xi2;
+        A.col(2) = xi3;
+
+        // Ab = y => A^T * A * b = A^T * y => b = (A^T * A)^-1 * A^T * y
+        VectorXf b = (A.transpose() * A).inverse() * A.transpose() * y;
+
+        // Update the translation and rotation
+        ddx += b(0);
+        ddy += b(1);
+        dda += b(2);
+
+        // Update the points with the new translation and rotation
+        MatrixXf T {
+            {cos(dda), -sin(dda), ddx},
+            {sin(dda), cos(dda), ddy},
+            {0, 0, 1}
+        };
+        MatrixXf temp_pts = pts.rowwise().homogeneous();
+        MatrixXf temp_pts2 = temp_pts * T.transpose();
+        pts = temp_pts2.leftCols(2);
+
+        // Check if the algorithm has converged
+        if (b.norm() < 0.0001f)
+        {
+            cout << "Converged after " << i << " iterations" << endl;
+            cout << "Translation: (" << ddx << ", " << ddy << ")" << endl;
+            cout << "Rotation: " << dda << endl;
+            break;
+        }
+        //cout << "Iteration: " << i << "ddx" << ddx << "ddy" << ddy << "dda" << dda << endl;
+    }
 }
 
-MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixXf normals, MatrixXf *distances)
+MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixXf normals, MatrixXf *distances, MatrixXf *new_normals_ptr)
 {
     // points: Matrix with 2 columns (x, y) and n rows (n points to be assigned)
     // line_segments: Matrix with 4 columns (x1, y1, x2, y2) and m rows (m line segments)
@@ -35,6 +90,7 @@ MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixX
     int n = points.rows();  // Number of points
     int m = line_segments.rows();   // Number of line segments
     MatrixXf targets = MatrixXf::Zero(n, 4);    // The closest line segment for each point
+    MatrixXf new_normals = MatrixXf::Zero(n, 2);    // The normal vector of the closest line segment for each point
     MatrixXf dists = MatrixXf::Zero(n, 1);   // The distance from the point to the closest line segment
 
     for (int i = 0; i < n; i++){    // Loop through all points
@@ -49,9 +105,12 @@ MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixX
         }
         dists(i) = min_dist;    // Update the distance matrix
         targets.row(i) = line_segments.row(min_index);   // Update the target matrix
+        new_normals.row(i) = normals.row(min_index);    // Update the normal matrix
+        cout << min_index << endl;
     }
 
     *distances = dists; // Update the distances pointer
+    *new_normals_ptr = new_normals; // Update the new_normals pointer
     return targets;
 }
 
@@ -77,6 +136,28 @@ float point_segment_distance(VectorXf point, VectorXf line_segment)
     float distance = (closest_point - vi).norm();
 
     return distance;
+}
+
+VectorXf get_signed_distance(MatrixXf points, MatrixXf targets, MatrixXf normals){
+    // points: Matrix with 2 columns (x, y) and n rows (n points)
+    // targets: Matrix with 4 columns (x1, y1, x2, y2) and n rows (n line segments)
+    // normals: Matrix with 2 columns (dx, dy) and n rows (n normal vectors)
+    // output: The signed distance from the points to the line segments
+
+    VectorXf y = VectorXf::Zero(points.rows()); // The signed distance from the points to the line segments
+    for (int i = 0; i < points.rows(); i++){
+        VectorXf vi = points.row(i); // The current point
+        VectorXf target = targets.row(i);   // The closest line segment for the current point
+        VectorXf ui = normals.row(i);   // The normal vector of the closest line segment for the current point
+        VectorXf z = target.head(2);    // The first endpoint of the closest line segment for the current point
+
+        // Find the closest point on the line segment to the point
+        float ri = ui.dot(z);   // The distance from the origin to the line
+        float yi = ri - ui.dot(vi); // The signed distance from the point to the line segment
+        y(i) = yi;  // Update the signed distance matrix
+    }
+
+    return y;
 }
 
 

@@ -32,7 +32,7 @@ void cox_test()
     MatrixXf points = generate_data();
     MatrixXf line_segments = generate_lines();
     plot(points, line_segments, "Example_points_with_lines");
-    cox_linefit(points, line_segments, 1);
+    cox_linefit(points, line_segments, 3);
 }
 
 int main()
