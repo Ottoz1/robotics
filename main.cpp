@@ -27,11 +27,17 @@ void vision_test()
     visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
 }
 
+void cox_test()
+{
+    MatrixXf points = generate_data();
+    MatrixXf line_segments = generate_lines();
+    plot(points, line_segments, "Example_points_with_lines");
+    cox_linefit(points, line_segments, 1);
+}
+
 int main()
 {
     //vision_test();
-    MatrixXf points = generate_data();
-    MatrixXf line_segments = generate_lines();
-    cox_linefit(points, line_segments);
+    cox_test();
     return 0;
 }

@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 corner_points = np.array([[0, 0], [0, 1], [2, 1], [2, 0]]) * 100
 plt.plot(corner_points[:, 0], corner_points[:, 1], 'bo')
 
+# Set the seed for reproducibility
+np.random.seed(0)
+
 # Make a square from the corner points
 line_segs = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])  # 0-1, 1-3, 3-2, 2-0
 line_mod = np.array([corner_points[line_segs[0, :]], corner_points[line_segs[1, :]], corner_points[line_segs[2, :]], corner_points[line_segs[3, :]]])
@@ -16,9 +19,6 @@ points = np.zeros((num_points, 2))
 for i in range(num_points):
     line_seg = line_segs[np.random.randint(0, 4)]
     points[i, :] = corner_points[line_seg[0], :] + np.random.rand() * (corner_points[line_seg[1], :] - corner_points[line_seg[0], :])
-
-# Set the seed for reproducibility
-np.random.seed(4)
 
 # Add noise
 points += 0.01 * np.random.randn(num_points, 2)
