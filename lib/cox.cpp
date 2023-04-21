@@ -31,10 +31,9 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         vm(0) = pts.col(0).mean();
         vm(1) = pts.col(1).mean();
         MatrixXf diff = pts.rowwise() - vm.transpose(); // Subtract the mean from the points
-        MatrixXf m {
-            {0, -1},
-            {1, 0}
-        };
+        MatrixXf m(2, 2);
+	m << 0, -1,
+	     1, 0;
         diff = m * diff.transpose();    // Multiply the difference matrix with the rotation matrix
         MatrixXf temp = diff.transpose();    // The z component of the normal vector of the line segments
         VectorXf xi3 = (new_normals.array() * temp.array()).rowwise().sum();
@@ -183,45 +182,7 @@ MatrixXf find_normals(MatrixXf lines){
 // This function is only used for plotting
 // It uses python and string which may not be available in the Pi
 // It should not be used in the final version
-void plot(MatrixXf points, MatrixXf lines, char* title)
-{
-    // Assign value to title if it is empty
-    if (title == NULL) {
-        title = "NO_TITLE_PROVIDED";
-    }
 
-    // Convert the MatrixXf to arrays
-    float* x = points.col(0).data();
-    float* y = points.col(1).data();
-    int n = points.rows();
-
-    // Construct the command to run the Python script
-    std::string cmd = "python3 ../lib/plotter.py ";
-    for (int i = 0; i < n; i++) {
-        if (i == n-1)
-            cmd += std::to_string(x[i]) + "," + std::to_string(y[i]) + " ";
-        else
-            cmd += std::to_string(x[i]) + "," + std::to_string(y[i]) + ",";
-    }
-
-    float* x1 = lines.col(0).data();
-    float* y1 = lines.col(1).data();
-    float* x2 = lines.col(2).data();
-    float* y2 = lines.col(3).data();
-    int m = lines.rows();
-    for (int i = 0; i < m; i++) {
-        if (i == m-1)
-            cmd += std::to_string(x1[i]) + "," + std::to_string(y1[i]) + "," + std::to_string(x2[i]) + "," + std::to_string(y2[i]) + " ";
-        else
-            cmd += std::to_string(x1[i]) + "," + std::to_string(y1[i]) + "," + std::to_string(x2[i]) + "," + std::to_string(y2[i]) + ",";
-    }
-
-    // Make title 
-    cmd += std::string(title);
-
-    // Call the Python script using the system() function
-    system(cmd.c_str());
-}
 
 MatrixXf generate_lines() {
     // Corner points of the box
@@ -269,11 +230,10 @@ MatrixXf transform_points(MatrixXf points, VectorXf transformation)
     float ddy = transformation(1);
     float dda = transformation(2);
 
-    MatrixXf T {
-            {cos(dda), -sin(dda), ddx},
-            {sin(dda), cos(dda), ddy},
-            {0, 0, 1}
-        };
+    MatrixXf T(3, 3);
+    T << cos(dda), -sin(dda), ddx,
+         sin(dda), cos(dda), ddy,
+         0, 0, 1;
     MatrixXf temp_pts = points.rowwise().homogeneous();
     MatrixXf temp_pts2 = temp_pts * T.transpose();
     MatrixXf pts = temp_pts2.leftCols(2);

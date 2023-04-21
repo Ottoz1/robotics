@@ -29,7 +29,7 @@ void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point
     inRange(imgHSV, lower, upper, imgHSV);
 
     // Get contours and only keep the one with the largest area
-    vector<vector<Point>> contours;
+    vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(imgHSV, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
@@ -58,7 +58,7 @@ void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point
 // This function finds the biggest contour within another contour
 // If "within" is empty, it will find the biggest contour in "contours" list
 // This function is used by "find_important_contours" to find the box, nummer within the box, and the inner_number within the number
-int biggest_within(vector<vector<Point>> contours, vector<Point> within)
+int biggest_within(vector<vector<Point> > contours, vector<Point> within)
 {
     int largest_contour_index = 0;
     int largest_area = 0;
@@ -119,9 +119,9 @@ void visualize_results(Mat image, vector<Point> largest_contour, vector<Point> n
     Mat img = image.clone();    // Make a copy of the image so we don't modify the original
 
     // Draw the contours on the image
-    drawContours(img, vector<vector<Point>>(1, largest_contour), 0, Scalar(0, 255, 0), 2);
-    drawContours(img, vector<vector<Point>>(1, number_contour), 0, Scalar(255, 0, 0), 2);
-    drawContours(img, vector<vector<Point>>(1, third_contour), 0, Scalar(0, 0, 255), 2);
+    drawContours(img, vector<vector<Point> >(1, largest_contour), 0, Scalar(0, 255, 0), 2);
+    drawContours(img, vector<vector<Point> >(1, number_contour), 0, Scalar(255, 0, 0), 2);
+    drawContours(img, vector<vector<Point> >(1, third_contour), 0, Scalar(0, 0, 255), 2);
 
     // Draw predicted number on the image above the box
     char predicted = (char)(predicted_number + 48);
