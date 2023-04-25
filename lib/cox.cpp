@@ -32,8 +32,7 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         vm(1) = pts.col(1).mean();
         MatrixXf diff = pts.rowwise() - vm.transpose(); // Subtract the mean from the points
         MatrixXf m(2, 2);
-	m << 0, -1,
-	     1, 0;
+	    m << 0, -1, 1, 0;
         diff = m * diff.transpose();    // Multiply the difference matrix with the rotation matrix
         MatrixXf temp = diff.transpose();    // The z component of the normal vector of the line segments
         VectorXf xi3 = (new_normals.array() * temp.array()).rowwise().sum();

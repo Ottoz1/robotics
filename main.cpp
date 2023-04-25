@@ -1,5 +1,6 @@
-#include "lib/vision.hpp"
+#include "lib/ravCam.hpp"
 #include "lib/cox.hpp"
+#include "lib/ravLidar.hpp"
 #include <time.h>
 
 void vision_test()
@@ -51,9 +52,32 @@ void cox_test()
     std::cout << "Execution time: " << duration << " microseconds." << std::endl;
 }
 
-int main()
+int main(int argc, char** argv)
 {
     //vision_test();
-    cox_test();
+    //cox_test();
+    int start = 0;
+    int stop = 0;
+    int rec = 0;
+    for (int i = 0; i < argc; i++){
+    if (strcmp(argv[i], "--start") == 0){
+        start = 1;
+    }
+    else if (strcmp(argv[i], "--stop") == 0){
+        stop = 1;
+    }
+    else if (strcmp(argv[i], "--receive") == 0){
+        rec = 1;
+    }
+    if(start = 1){
+        initLidar();
+    }
+    if(stop = 1){
+        stopLidar();
+    }
+    if(rec = 1){
+        listen();
+    }
+}
     return 0;
 }
