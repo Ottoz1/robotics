@@ -27,6 +27,7 @@ int stopLidar(){
 }
 
 int sendToLidar(char* message){
+    printf("\nSend to lidar");
     int sock;
     int status;
     struct sockaddr_in cli_addr;
@@ -51,7 +52,7 @@ int sendToLidar(char* message){
     
 
     int size = *(&message + 1) - message;
-    printf("Message:%s, Size:%d", message, size);
+    printf("\nMessage:%s, Size:%d", message, size);
     send(sock, message, size, 0);
     close(sock);
     return 0;
