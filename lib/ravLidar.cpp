@@ -99,7 +99,7 @@ int listen(){
         if(header_size != 5){
             printf("inside of break\n");
         }
-        printf("rad 103>:D\n");
+        printf("header %d\n", (int)header[0]);
         if((int)header[0] == 165){
             printf("inside if\n");
             int data_size = ((int)(header[2])<<16) + ((int)(header[3])<<8) + ((int)(header[4]));
@@ -118,7 +118,7 @@ int listen(){
                 if(iter >= 200){
                     iter = 0;
                     dataReady = 1;
-                    break;
+                    lidarRunning = 0;
                 }
             }
 
