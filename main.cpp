@@ -103,7 +103,7 @@ int main(int argc, char **argv){
             break;
         }
         if(dataReady = 1){
-            printf("cox time");
+            //printf("cox time");
             dataReady=0;
         }
 

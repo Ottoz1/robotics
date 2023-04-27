@@ -111,7 +111,7 @@ int listen(){
 
             pointBuffer(iter,0) = distance * cos(theta);
             pointBuffer(iter,1) = distance * sin(theta);
-
+            printf("radius: %d, angle: %d", distance, angle);
             iter++;
 
             if(iter >= 200){
@@ -121,7 +121,6 @@ int listen(){
                 iter = 0;
             }
             dataReady = 1;
-            cout << pointBuffer;
             MatrixXd pointBuffer(200,2); //maybe clears? idk
 
         }
