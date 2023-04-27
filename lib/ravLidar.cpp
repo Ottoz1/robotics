@@ -56,7 +56,7 @@ int sendToLidar(char* message){
 
     int size = *(&message + 1) - message;
     printf("\nMessage:%s, Size:%d", message, size);
-    send(sock, message, size, 0);
+    send(sock, message, 2, 0);
     close(sock);
     return 0;
 }
