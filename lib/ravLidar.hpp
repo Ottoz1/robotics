@@ -9,9 +9,7 @@ using namespace std;
 #define PI 3.14159265358979323846
 
 extern MatrixXd points;
-
 extern int dataReady;
-
 extern int lidarRunning;
 
 int initLidar();

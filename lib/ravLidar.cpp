@@ -94,6 +94,7 @@ int listen(){
     printf("lidar running: %d", lidarRunning);
 
     while(lidarRunning == 1){
+        cout << "here we go running\n";
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             break;
@@ -110,13 +111,12 @@ int listen(){
                 points(iter,0) = 3;//distance * cos(theta);
                 points(iter,1) = 2;//distance * sin(theta);
                 iter++;
-            }
 
-            if(iter >= 200){
-                iter = 0;
-                dataReady = 1;
+                if(iter >= 200){
+                    iter = 0;
+                    dataReady = 1;
+                }
             }
-            MatrixXd pointBuffer(200,2); //maybe clears? idk
 
         }
     }
