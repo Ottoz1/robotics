@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <time.h>
 
+
 MatrixXd points(200,2);
 int dataReady = 0;
 int lidarRunning = 1;
@@ -89,9 +90,10 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
-    thread th1(listenLidar());
     InputParser input(argc, argv);
+    thread th1(listen);
     initLidar();
+
     time_t start = time(NULL); 
     while (1){
         time_t end = time(NULL);
@@ -100,8 +102,9 @@ int main(int argc, char **argv){
         if (elapsed_seconds >= 20.0) {
             break;
         }
-
+        
         if(dataReady = 1){
+            //printf("cox time");
             cout << points;
             dataReady=0;
         }
@@ -115,4 +118,3 @@ int main(int argc, char **argv){
 
     return 0;
 }
-
