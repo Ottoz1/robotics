@@ -92,20 +92,19 @@ class InputParser{
 int main(int argc, char **argv){
     InputParser input(argc, argv);
     initLidar();
+    printf("here be me now1");
     listen();
-
     time_t start = time(NULL); 
     while (1){
         time_t end = time(NULL);
         double elapsed_seconds = difftime(end, start);
 
-        if (elapsed_seconds >= 20.0) {
+        if (elapsed_seconds >= 1.0) {
             break;
         }
 
         if(dataReady = 1){
             //printf("cox time");
-            cout << points;
             dataReady=0;
         }
     }
