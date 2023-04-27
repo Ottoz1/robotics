@@ -88,7 +88,7 @@ int main(int argc, char **argv){
     if(input.cmdOptionExists("--stop")){
         stopLidar();
     }
-    if(input.cmdOptionExists("receive")){
+    if(input.cmdOptionExists("--receive")){
         listen();
     }
     const std::string &filename = input.getCmdOption("-f");
