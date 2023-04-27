@@ -30,20 +30,24 @@ int sendToLidar(char* message){
     int sock;
     int status;
     struct sockaddr_in cli_addr;
+    sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    if(sock = socket(AF_INET, SOCK_STREAM, 0) < 0){
+    if(sock < 0){
         perror("socket failed");
     }
+        
+    
 
     cli_addr.sin_family = AF_INET;
     cli_addr.sin_port = htons(TCP_PORT);
     cli_addr.sin_addr.s_addr = htonl(TCP_IP);
 
-    if(status = connect(sock, (struct sockaddr*)&cli_addr, sizeof(cli_addr)) < 0){
+    int s = connect(sock, (struct sockaddr*)&cli_addr, sizeof(cli_addr));
+    if( s < 0 ){
         perror("Connection Failed");
-        printf("\nConnection Failed\n");
-        return -1;
+        return -1; 
     }
+    
 
     int size = *(&message + 1) - message; 
     send(sock, message, size, 0);
