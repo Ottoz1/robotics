@@ -94,13 +94,15 @@ int listen(){
     printf("lidar running: %d", lidarRunning);
 
     while(lidarRunning == 1){
-        printf("inside of love");
+        printf("inside of love\n");
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
-            printf("inside of break");
+            printf("inside of break\n");
             break;
         }
+        printf("rad 103>:D\n");
         if((int)header[0] == 165){
+            printf("inside if\n");
             int data_size = ((int)(header[2])<<16) + ((int)(header[3])<<8) + ((int)(header[4]));
             read(connfd, buffer, data_size);
             int quality = (int)(buffer[0])>>2;
