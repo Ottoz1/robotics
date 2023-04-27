@@ -11,6 +11,7 @@ using namespace std;
 extern MatrixXd points;
 extern int dataReady;
 extern int lidarRunning;
+extern int iter;
 
 int initLidar();
 int stopLidar();

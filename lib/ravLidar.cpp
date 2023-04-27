@@ -10,7 +10,7 @@
 #include "ravLidar.hpp"
 #include "cox.hpp"
 
-int iter = 0;
+iter = 0;
 
 int initLidar(){
     char buff[] = {0x10,0x00};

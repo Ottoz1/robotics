@@ -12,6 +12,7 @@
 MatrixXd points(200,2);
 int dataReady = 0;
 int lidarRunning = 1;
+int iter = 0;
 
 using namespace std;
 
@@ -104,7 +105,7 @@ int main(int argc, char **argv){
         }
         
         if(dataReady = 1){
-            printf("\ncox time\n");
+            printf("\ncox time %d\n", iter);
             printf("|---------------|\n");
             cout << points;
             printf("\n|---------------|");
