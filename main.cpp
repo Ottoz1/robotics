@@ -3,11 +3,7 @@
 #include "lib/ravLidar.hpp"
 #include <time.h>
 #include <iostream>
-#include <thread>
 #include <Eigen/Dense>
-#include <unistd.h>
-#include <time.h>
-
 
 MatrixXd points(200,2);
 int dataReady = 0;
@@ -90,30 +86,17 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
+
     InputParser input(argc, argv);
-    listen();
-    //initLidar();
-    printf("here be me now1");
-    time_t start = time(NULL); 
-    while (1){
-        time_t end = time(NULL);
-        double elapsed_seconds = difftime(end, start);
-
-        if (elapsed_seconds >= 1.0) {
-            break;
-        }
-
-        if(dataReady = 1){
-            //printf("cox time");
-            dataReady=0;
-        }
+    if(input.cmdOptionExists("--start")){
+        initLidar();
     }
-
-    lidarRunning = 0;
-
-    //th1.join();
-
-    stopLidar();
-
+    if(input.cmdOptionExists("--stop")){
+        stopLidar();
+    }
+    if(input.cmdOptionExists("--receive")){
+        listen();
+    }
     return 0;
 }
+

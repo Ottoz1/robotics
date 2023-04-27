@@ -94,12 +94,10 @@ int listen(){
     printf("lidar running: %d", lidarRunning);
 
     while(lidarRunning == 1){
-        printf("inside of love\n");
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
-            printf("inside of break\n");
+            break;
         }
-        printf("header %d\n", (int)header[0]);
         if((int)header[0] == 165){
             printf("inside if\n");
             int data_size = ((int)(header[2])<<16) + ((int)(header[3])<<8) + ((int)(header[4]));
@@ -115,11 +113,6 @@ int listen(){
                 points(iter,1) = 2;//distance * sin(theta);
                 iter++;
 
-                if(iter >= 200){
-                    iter = 0;
-                    dataReady = 1;
-                    lidarRunning = 0;
-                }
             }
 
         }
