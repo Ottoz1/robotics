@@ -95,7 +95,7 @@ int main(int argc, char **argv){
         stopLidar();
     }
     if(input.cmdOptionExists("--receive")){
-        listen();
+        listenLidar();
     }
     return 0;
 }

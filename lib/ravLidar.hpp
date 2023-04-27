@@ -15,4 +15,4 @@ extern int lidarRunning;
 int initLidar();
 int stopLidar();
 int sendToLidar(char* message);
-int listen();
+int listenLidar();
