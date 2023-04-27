@@ -91,7 +91,7 @@ class InputParser{
 
 int main(int argc, char **argv){
     InputParser input(argc, argv);
-    thread th1(listen);
+    thread th1(listenLidar);
     initLidar();
 
     time_t start = time(NULL); 
