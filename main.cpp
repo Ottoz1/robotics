@@ -104,8 +104,10 @@ int main(int argc, char **argv){
         }
         
         if(dataReady = 1){
-            //printf("cox time");
+            printf("\ncox time\n");
+            printf("|---------------|\n")
             cout << points;
+            printf("\n|---------------|")
             dataReady=0;
         }
     }
