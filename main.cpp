@@ -95,8 +95,9 @@ int main(int argc, char **argv){
     MatrixXf line_segments = generate_lines();
     thread th1(listenLidar);
     initLidar();
-
     MatrixXf cart;
+
+    sleep(2);
 
     time_t start = time(NULL); 
     while (1){
@@ -122,6 +123,8 @@ int main(int argc, char **argv){
     }
 
     lidarRunning = 0;
+
+    sleep(1);
 
     th1.join();
 
