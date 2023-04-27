@@ -69,6 +69,8 @@ int listen(){
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr;
 
+    lidarRunning = 1;
+
     char sendBuff[BUFFER_SIZE];
     time_t ticks;
 
@@ -87,11 +89,6 @@ int listen(){
     }  
     
     bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-
-    listen(listenfd, MAX_CLIENTS);
-
-    return 0;
-
     /* 
      *
      */
