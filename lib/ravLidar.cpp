@@ -8,8 +8,6 @@
 #include <time.h>
 #include "ravLidar.hpp"
 
-char buffer[1024] = { 0 };
-
 int initLidar(){
     char buff[] = {0x10,0x00};
     printf("\nInitialzing");
@@ -68,6 +66,9 @@ int listen(){
     char sendBuff[BUFFER_SIZE];
     time_t ticks;
 
+    char header[5] = { 0 };
+
+
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
@@ -89,8 +90,9 @@ int listen(){
      */
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
     while(1){
-        int valread = read(connfd, buffer, 1024);
-        printf("%s\n", buffer);
+        int valread = read(connfd, header, 5);
+        printf("quality%d\n", (int)header[0]);
     }
     close(connfd);
+    return 0;
 }
