@@ -79,13 +79,13 @@ int main(int argc, char** argv)
         }
         printf("\n Initialized");
     }
-    else if(stop = 1){
+    if(stop = 1){
         s = stopLidar();
         if(s != 0){
             perror("Lidar Stop failed");
         }
     }
-    else if(rec = 1){
+    if(rec = 1){
         listen();
     }
     return 0;
