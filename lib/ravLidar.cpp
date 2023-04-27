@@ -65,6 +65,7 @@ int sendToLidar(char* message){
 int listen(){
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr;
+    int opt = 1;
 
     lidarRunning = 1;
 
@@ -75,6 +76,14 @@ int listen(){
     char buffer[4096] = { 0 };
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(listenfd < 0){
+        perror("error socket");
+    }
+
+    if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt))){
+        perror("setsockopt");
+    }
+
     memset(&serv_addr, '0', sizeof(serv_addr));
     memset(sendBuff, '0', sizeof(sendBuff));
     
