@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include "ravLidar.hpp"
+#include "cox.hpp"
 
 int initLidar(){
     char buff[] = {0x10,0x00};
@@ -69,8 +70,6 @@ int listen(){
     char header[5] = { 0 };
     char buffer[4096] = { 0 };
 
-
-
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
     memset(sendBuff, '0', sizeof(sendBuff));
@@ -86,11 +85,25 @@ int listen(){
 
     listen(listenfd, MAX_CLIENTS);
 
+    int r = points.rows();
+    int c = points.cols();
+
+    for (int i = 0; i < r; ++i)
+    {
+        for (int j = 0; j < c; ++j)
+        {
+            std::cout << points(i,j) << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    return 0;
+
     /* 
      *
      */
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-    while(1){
+    while(false){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             break;

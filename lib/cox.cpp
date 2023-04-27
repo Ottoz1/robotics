@@ -347,3 +347,7 @@ MatrixXf generate_data() {
     // Convert to matrix
     return arrayToMatrix(&data[0][0], 100, 2);
 }
+
+MatrixXf polar_to_cartesian(MatrixXf polar){
+    
+}

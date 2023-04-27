@@ -3,6 +3,9 @@
 #include "lib/ravLidar.hpp"
 #include <time.h>
 #include <iostream>
+#include <Eigen/Dense>
+
+MatrixXd points(200,2);
 
 using namespace std;
 
@@ -81,6 +84,7 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
+
     InputParser input(argc, argv);
     if(input.cmdOptionExists("--start")){
         initLidar();
