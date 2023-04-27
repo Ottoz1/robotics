@@ -108,7 +108,7 @@ int listenLidar(){
             //printf("radius: %d, angle: %d\n", distance, angle);
 
             if(dataReady == 0){
-                points << distance, angle;
+                points.row(iter) << distance, angle;
                 iter++;
                 if(iter >= 200){
                     iter = 0;
