@@ -14,6 +14,7 @@ int dataReady = 0;
 int lidarRunning = 1;
 
 using namespace std;
+using namespace Eigen;
 
 void vision_test()
 {
@@ -94,6 +95,8 @@ int main(int argc, char **argv){
     thread th1(listenLidar);
     initLidar();
 
+    MatrixXf cart;
+
     time_t start = time(NULL); 
     while (1){
         time_t end = time(NULL);
@@ -106,7 +109,9 @@ int main(int argc, char **argv){
         if(dataReady = 1){
             printf("\ncox time\n");
             printf("|---------------|\n");
-            cout << points;
+
+            cart = polar_to_cart(points);
+            cout << cart;
             printf("\n|---------------|");
             dataReady=0;
         }

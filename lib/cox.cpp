@@ -220,6 +220,13 @@ MatrixXf arrayToMatrix(float* data, int numRows, int numCols)
     return myMatrix;
 }
 
+MatrixXf polar_to_cart(MatrixXf polar){
+    MatrixXf cartesian(200,2);
+    cartesian.col(0) = polar.col(0).array() * polar.col(1).array().cos();
+    cartesian.col(1) = polar.col(0).array() * polar.col(1).array().sin();
+    return cartesian;
+}
+
 MatrixXf transform_points(MatrixXf points, VectorXf transformation)
 {
     // points: Matrix with 2 columns (x, y) and n rows (n points)
