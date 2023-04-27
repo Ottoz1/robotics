@@ -9,7 +9,7 @@
 #include <time.h>
 
 
-MatrixXd points(200,2);
+MatrixXf points(200,2);
 int dataReady = 0;
 int lidarRunning = 1;
 

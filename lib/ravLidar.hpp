@@ -8,7 +8,7 @@ using namespace std;
 #define MAX_CLIENTS 10
 const double PI = 3.14159265358979323846;
 
-extern MatrixXd points;
+extern MatrixXf points;
 extern int dataReady;
 extern int lidarRunning;
 
