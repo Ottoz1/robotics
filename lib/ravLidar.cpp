@@ -59,7 +59,6 @@ int sendToLidar(char* message){
     
 
     int size = *(&message + 1) - message;
-    printf("\nMessage:%s, Size:%d", message, size);
     send(sock, message, 2, 0);
     close(sock);
     return 0;
@@ -93,6 +92,9 @@ int listen(){
      *
      */
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+
+    printf("lidar running: %d", lidarRunning);
+
     while(lidarRunning == 1){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
@@ -105,7 +107,7 @@ int listen(){
             int angle = (((int)(buffer[1])>>1) + ((int)(buffer[2])<<8))>>7;
             int theta = angle * (PI / 180);
             int distance = (((int)(buffer[3])) + ((int)(buffer[4])<<8))>>2;
-
+            
             pointBuffer(iter,0) = distance * cos(theta);
             pointBuffer(iter,1) = distance * sin(theta);
             printf("radius: %d, angle: %d", distance, angle);
