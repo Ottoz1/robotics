@@ -94,6 +94,7 @@ int listen(){
     printf("lidar running: %d", lidarRunning);
 
     while(lidarRunning == 1){
+        printf("inside of love");
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             break;
