@@ -108,10 +108,8 @@ int listenLidar(){
             //printf("radius: %d, angle: %d\n", distance, angle);
 
             if(dataReady == 0){
-                points(0,iter) = distance * cos(theta);
-                points(1,iter) = distance * sin(theta);
+                points.row(iter) << distance * cos(theta), distance * sin(theta);
                 iter++;
-
                 if(iter >= 200){
                     iter = 0;
                     dataReady = 1;
