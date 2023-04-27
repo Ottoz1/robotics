@@ -107,6 +107,7 @@ int main(int argc, char **argv){
         }
         if(dataReady = 1){
             printf("cox time");
+            cout << points;
         }
 
     }
