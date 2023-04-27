@@ -90,12 +90,8 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
-    char key;
-
     InputParser input(argc, argv);
-
     thread th1(listen);
-
     initLidar();
 
     time_t start = time(NULL); 
@@ -108,7 +104,6 @@ int main(int argc, char **argv){
         }
         if(dataReady = 1){
             printf("cox time");
-            cout << points;
         }
 
     }

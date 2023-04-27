@@ -122,6 +122,7 @@ int listen(){
                 iter = 0;
                 MatrixXd pointBuffer(200,2);
             }
+            cout << pointBuffer;
 
         }
     }
