@@ -96,6 +96,7 @@ int listenLidar(){
     while(lidarRunning == 1){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
+            close(connfd);
             break;
         }
         if((int)header[0] == 165){
@@ -109,7 +110,7 @@ int listenLidar(){
 
             points.row(iter) << distance, theta;
             iter++;
-            if(iter >= 200){
+            if(iter >= 160){
                 iter = 0;
                 dataReady = 1;
             }
