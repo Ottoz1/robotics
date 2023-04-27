@@ -9,7 +9,7 @@
 #include <time.h>
 
 
-MatrixXd points(200,2);
+float points[200][2];
 int dataReady = 0;
 int lidarRunning = 1;
 
@@ -104,9 +104,10 @@ int main(int argc, char **argv){
         }
         
         if(dataReady = 1){
-            printf("\ncox time %d\n");
+            printf("\ncox time\n");
             printf("|---------------|\n");
-            cout << points;
+            MatrixXf temp = arrayToMatrix(points,200,2);
+            cout << temp;
             printf("\n|---------------|");
             dataReady=0;
         }

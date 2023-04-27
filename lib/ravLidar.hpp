@@ -8,7 +8,7 @@ using namespace std;
 #define MAX_CLIENTS 10
 #define PI 3.14159265358979323846
 
-extern MatrixXd points;
+extern float[][] points;
 extern int dataReady;
 extern int lidarRunning;
 
