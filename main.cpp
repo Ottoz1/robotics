@@ -104,7 +104,7 @@ int main(int argc, char **argv){
         }
         
         if(dataReady = 1){
-            printf("\ncox time %d\n", iter);
+            printf("\ncox time %d\n");
             printf("|---------------|\n");
             cout << points;
             printf("\n|---------------|");
