@@ -118,10 +118,10 @@ int listen(){
                 for(int i = 0; i < iter; i++){
                     points.row(i) = pointBuffer.row(i);
                 }
-                dataReady = 1;
                 iter = 0;
-                MatrixXd pointBuffer(200,2);
+                MatrixXd pointBuffer(200,2); //maybe clears? idk
             }
+            dataReady = 1;
             cout << pointBuffer;
 
         }
