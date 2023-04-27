@@ -110,7 +110,7 @@ int listenLidar(){
 
             points.row(iter) << distance, theta;
             iter++;
-            if(iter >= 160){
+            if(iter >= 200){
                 iter = 0;
                 dataReady = 1;
             }
