@@ -12,7 +12,6 @@
 MatrixXd points(200,2);
 int dataReady = 0;
 int lidarRunning = 1;
-int iter = 0;
 
 using namespace std;
 

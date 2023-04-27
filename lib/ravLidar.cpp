@@ -10,7 +10,7 @@
 #include "ravLidar.hpp"
 #include "cox.hpp"
 
-iter = 0;
+int iter = 0;
 
 int initLidar(){
     char buff[] = {0x10,0x00};
@@ -108,8 +108,8 @@ int listenLidar(){
             //printf("radius: %d, angle: %d\n", distance, angle);
 
             if(dataReady == 0){
-                points(iter,0) = distance * cos(theta);
-                points(iter,1) = distance * sin(theta);
+                points(0,iter) = distance * cos(theta);
+                points(1,iter) = distance * sin(theta);
                 iter++;
 
                 if(iter >= 200){
