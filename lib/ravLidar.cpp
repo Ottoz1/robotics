@@ -10,7 +10,7 @@
 
 int initLidar(){
     char buff[] = {0x10,0x00};
-    printf("\n Initialzing")
+    printf("\n Initialzing");
     if(sendToLidar(buff) != 0){
         printf("\ninitLidar Failed\n");
         return -1;

@@ -77,6 +77,7 @@ int main(int argc, char** argv)
         if(s != 0){
             perror("Lidar Init failed");
         }
+        printf("\n Initialized");
     }
     else if(stop = 1){
         s = stopLidar();
