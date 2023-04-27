@@ -106,7 +106,6 @@ int main(int argc, char **argv){
             //printf("cox time");
             dataReady=0;
         }
-
     }
 
     lidarRunning = 0;

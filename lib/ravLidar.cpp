@@ -93,7 +93,7 @@ int listen(){
      *
      */
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-    while(lidarRunning){
+    while(lidarRunning == 1){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             break;
