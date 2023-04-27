@@ -11,6 +11,7 @@
 
 MatrixXd points(200,2);
 int dataReady = 0;
+int lidarRunning = 1;
 
 using namespace std;
 
@@ -111,6 +112,10 @@ int main(int argc, char **argv){
         }
 
     }
+
+    lidarRunning = 0;
+
+    th1.join();
 
     stopLidar();
 

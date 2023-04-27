@@ -12,6 +12,8 @@ extern MatrixXd points;
 
 extern int dataReady;
 
+extern int lidarRunning;
+
 int initLidar();
 int stopLidar();
 int sendToLidar(char* message);
