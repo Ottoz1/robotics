@@ -88,14 +88,7 @@ int listen(){
     int r = points.rows();
     int c = points.cols();
 
-    for (int i = 0; i < r; ++i)
-    {
-        for (int j = 0; j < c; ++j)
-        {
-            std::cout << points(i,j) << " ";
-        }
-        std::cout << std::endl;
-    }
+    printf("rows %d, cols %d",r,c);
 
     return 0;
 
