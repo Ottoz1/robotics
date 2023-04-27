@@ -10,20 +10,20 @@
 
 int initLidar(){
     char buff[] = {0x10,0x00};
-    if(sendToLidar(buff) != 1){
+    if(sendToLidar(buff) != 0){
         printf("\ninitLidar Failed\n");
         return -1;
     }
-    return 1;
+    return 0;
 }
 
 int stopLidar(){
     char buff[] = {0x20,0x00};
-    if(sendToLidar(buff) != 1){
+    if(sendToLidar(buff) != 0){
         printf("\ninitLidar Failed\n");
         return -1;
     }
-    return 1;
+    return 0;
 }
 
 int sendToLidar(char* message){
@@ -34,6 +34,7 @@ int sendToLidar(char* message){
 
     if(sock < 0){
         perror("socket failed");
+        return -1;
     }
         
     
