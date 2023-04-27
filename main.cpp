@@ -92,7 +92,7 @@ class InputParser{
 int main(int argc, char **argv){
     InputParser input(argc, argv);
     listen();
-    initLidar();
+    //initLidar();
     printf("here be me now1");
     time_t start = time(NULL); 
     while (1){

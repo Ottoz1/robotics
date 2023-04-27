@@ -63,6 +63,7 @@ int sendToLidar(char* message){
 }
 
 int listen(){
+    initLidar();
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr;
 
