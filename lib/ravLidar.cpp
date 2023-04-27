@@ -67,6 +67,7 @@ int listen(){
     time_t ticks;
 
     char header[5] = { 0 };
+    char buffer[4096] = { 0 };
 
 
 
@@ -90,8 +91,19 @@ int listen(){
      */
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
     while(1){
-        int valread = read(connfd, header, 5);
-        printf("quality%d\n", (int)header[0]);
+        int header_size = read(connfd, header, 5);
+        if(header_size != 5){
+            break;
+        }
+        if((int)header[0] == 165){
+            int data_size = ((int)(header[2])<<16) + ((int)(header[3])<<8) + ((int)(header[4]));
+            printf("\nPacket size: %d\n", data_size);
+            read(connfd, buffer, data_size);
+            int quality = (int)(buffer[0])>>2;
+            int angle = (((int)(buffer[1])>>1) + ((int)(buffer[2])<<8))>>7;
+            int distance = (((int)(buffer[3])) + ((int)(buffer[4])<<8))>>2;
+            printf("\nquality: %d\nangle: %d\ndistance: %d", quality, angle, distance);
+        }
     }
     close(connfd);
     return 0;
