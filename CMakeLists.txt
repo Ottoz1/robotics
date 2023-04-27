@@ -9,6 +9,8 @@ find_package(OpenCV REQUIRED)
 # Find Eigen package
 find_package(Eigen3 REQUIRED)
 
+add_compile_options(-std=c++11)
+
 # Add executable target for main.cpp
 add_executable(lab1 main.cpp)
 

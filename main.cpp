@@ -97,9 +97,9 @@ int main(int argc, char **argv){
 
     initLidar();
 
-    time_t start = time(nullptr); 
+    time_t start = time(NULL); 
     while (1){
-        time_t end = time(nullptr);
+        time_t end = time(NULL);
         double elapsed_seconds = difftime(end, start);
 
         if (elapsed_seconds >= 20.0) {
