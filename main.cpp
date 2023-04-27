@@ -2,6 +2,9 @@
 #include "lib/cox.hpp"
 #include "lib/ravLidar.hpp"
 #include <time.h>
+#include <iostream>
+
+using namespace std;
 
 void vision_test()
 {
@@ -52,41 +55,45 @@ void cox_test()
     std::cout << "Execution time: " << duration << " microseconds." << std::endl;
 }
 
-int main(int argc, char** argv)
-{
-    //vision_test();
-    //cox_test();
-    int start = 0;
-    int stop = 0;
-    int rec = 0;
-    int s;
-    for (int i = 0; i < argc; i++){
-        if (strcmp(argv[i], "--start") == 0){
-            start = 1;
+class InputParser{
+    public:
+        InputParser (int &argc, char **argv){
+            for (int i=1; i < argc; ++i)
+                this->tokens.push_back(std::string(argv[i]));
         }
-        else if (strcmp(argv[i], "--stop") == 0){
-            stop = 1;
+        /// @author iain
+        const std::string& getCmdOption(const std::string &option) const{
+            std::vector<std::string>::const_iterator itr;
+            itr =  std::find(this->tokens.begin(), this->tokens.end(), option);
+            if (itr != this->tokens.end() && ++itr != this->tokens.end()){
+                return *itr;
+            }
+            static const std::string empty_string("");
+            return empty_string;
         }
-        else if (strcmp(argv[i], "--receive") == 0){
-            rec = 1;
+        /// @author iain
+        bool cmdOptionExists(const std::string &option) const{
+            return std::find(this->tokens.begin(), this->tokens.end(), option)
+                   != this->tokens.end();
         }
-    }
+    private:
+        std::vector <std::string> tokens;
+};
 
-    if(start = 1){
-        s = initLidar();
-        if(s != 0){
-            perror("Lidar Init failed");
-        }
-        printf("\n Initialized");
+int main(int argc, char **argv){
+    InputParser input(argc, argv);
+    if(input.cmdOptionExists("--start")){
+        initLidar();
     }
-    if(stop = 1){
-        s = stopLidar();
-        if(s != 0){
-            perror("Lidar Stop failed");
-        }
+    if(input.cmdOptionExists("--stop")){
+        stopLidar();
     }
-    if(rec = 1){
+    if(input.cmdOptionExists("receive")){
         listen();
+    }
+    const std::string &filename = input.getCmdOption("-f");
+    if (!filename.empty()){
+        // Do interesting things ...
     }
     return 0;
 }

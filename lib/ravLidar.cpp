@@ -10,9 +10,8 @@
 
 int initLidar(){
     char buff[] = {0x10,0x00};
-    printf("\n Initialzing");
+    printf("\nInitialzing");
     if(sendToLidar(buff) != 0){
-        printf("\ninitLidar Failed\n");
         return -1;
     }
     return 0;
@@ -20,8 +19,8 @@ int initLidar(){
 
 int stopLidar(){
     char buff[] = {0x20,0x00};
+    printf("\nStopping");
     if(sendToLidar(buff) != 0){
-        printf("\ninitLidar Failed\n");
         return -1;
     }
     return 0;
@@ -41,7 +40,7 @@ int sendToLidar(char* message){
         
     cli_addr.sin_family = AF_INET;
     cli_addr.sin_port = htons(TCP_PORT);
-
+ 
     if (inet_pton(AF_INET, "127.0.0.1", &cli_addr.sin_addr) <= 0) {  
         printf("\nInvalid address/ Address not supported \n");  
         return -1;  
