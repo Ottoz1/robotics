@@ -10,8 +10,6 @@
 #include "ravLidar.hpp"
 #include "cox.hpp"
 
-MatrixXd pointBuffer(200,2);
-
 int iter = 0;
 
 int initLidar(){
@@ -107,19 +105,17 @@ int listen(){
             int angle = (((int)(buffer[1])>>1) + ((int)(buffer[2])<<8))>>7;
             int theta = angle * (PI / 180);
             int distance = (((int)(buffer[3])) + ((int)(buffer[4])<<8))>>2;
-            
-            pointBuffer(iter,0) = distance * cos(theta);
-            pointBuffer(iter,1) = distance * sin(theta);
-            printf("radius: %d, angle: %d", distance, angle);
-            iter++;
+
+            if(dataReady == 0){
+                points(iter,0) = distance * cos(theta);
+                points(iter,1) = distance * sin(theta);
+                iter++;
+            }
 
             if(iter >= 200){
-                for(int i = 0; i < iter; i++){
-                    points.row(i) = pointBuffer.row(i);
-                }
                 iter = 0;
+                dataReady = 1;
             }
-            dataReady = 1;
             MatrixXd pointBuffer(200,2); //maybe clears? idk
 
         }
