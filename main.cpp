@@ -6,7 +6,7 @@
 #include <thread>
 #include <Eigen/Dense>
 #include <unistd.h>
-#include <chrono>
+#include <time.h>
 
 
 MatrixXd points(200,2);
@@ -97,12 +97,12 @@ int main(int argc, char **argv){
 
     initLidar();
 
-    std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+    time_t start = time(nullptr); 
     while (1){
-        std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
-        std::chrono::duration<double> elapsed_seconds = end - start;
+        time_t end = time(nullptr);
+        double elapsed_seconds = difftime(end, start);
 
-        if (elapsed_seconds.count() >= 20.0) {
+        if (elapsed_seconds >= 20.0) {
             break;
         }
         if(dataReady = 1){
