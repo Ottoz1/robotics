@@ -91,8 +91,8 @@ class InputParser{
 
 int main(int argc, char **argv){
     InputParser input(argc, argv);
-    thread th1(listen);
     initLidar();
+    listen();
 
     time_t start = time(NULL); 
     while (1){
@@ -102,7 +102,7 @@ int main(int argc, char **argv){
         if (elapsed_seconds >= 20.0) {
             break;
         }
-        
+
         if(dataReady = 1){
             //printf("cox time");
             cout << points;
@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 
     lidarRunning = 0;
 
-    th1.join();
+    //th1.join();
 
     stopLidar();
 

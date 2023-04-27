@@ -94,7 +94,6 @@ int listen(){
     printf("lidar running: %d", lidarRunning);
 
     while(lidarRunning == 1){
-        cout << "here we go running\n";
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             break;
@@ -106,6 +105,7 @@ int listen(){
             int angle = (((int)(buffer[1])>>1) + ((int)(buffer[2])<<8))>>7;
             int theta = angle * (PI / 180);
             int distance = (((int)(buffer[3])) + ((int)(buffer[4])<<8))>>2;
+            printf("radius: %d, angle: %d", distance, angle);
 
             if(dataReady == 0){
                 points(iter,0) = 3;//distance * cos(theta);
