@@ -6,8 +6,13 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <math.h>
 #include "ravLidar.hpp"
 #include "cox.hpp"
+
+MatrixXd pointBuffer(200,2);
+
+int iter = 0;
 
 int initLidar(){
     char buff[] = {0x10,0x00};
@@ -85,30 +90,39 @@ int listen(){
 
     listen(listenfd, MAX_CLIENTS);
 
-    int r = points.rows();
-    int c = points.cols();
-
-    printf("rows %d, cols %d",r,c);
-
     return 0;
 
     /* 
      *
      */
     connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
-    while(false){
+    while(1){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             break;
         }
         if((int)header[0] == 165){
             int data_size = ((int)(header[2])<<16) + ((int)(header[3])<<8) + ((int)(header[4]));
-            printf("\nPacket size: %d\n", data_size);
             read(connfd, buffer, data_size);
             int quality = (int)(buffer[0])>>2;
             int angle = (((int)(buffer[1])>>1) + ((int)(buffer[2])<<8))>>7;
+            int theta = angle * (PI / 180);
             int distance = (((int)(buffer[3])) + ((int)(buffer[4])<<8))>>2;
-            printf("\nquality: %d\nangle: %d\ndistance: %d", quality, angle, distance);
+
+            pointBuffer(iter,0) = distance * cos(theta);
+            pointBuffer(iter,1) = distance * sin(theta);
+
+            iter++;
+
+            if(iter >= 200){
+                for(int i = 0; i < iter; i++){
+                    points.row(i) = pointBuffer.row(i);
+                }
+                dataReady = 1;
+                iter = 0;
+                MatrixXd pointBuffer(200,2);
+            }
+
         }
     }
     close(connfd);

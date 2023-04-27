@@ -3,9 +3,14 @@
 #include "lib/ravLidar.hpp"
 #include <time.h>
 #include <iostream>
+#include <thread>
 #include <Eigen/Dense>
+#include <unistd.h>
+#include <chrono>
+
 
 MatrixXd points(200,2);
+int dataReady = 0;
 
 using namespace std;
 
@@ -84,20 +89,29 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
+    char key;
 
     InputParser input(argc, argv);
-    if(input.cmdOptionExists("--start")){
-        initLidar();
+
+    thread th1(listen);
+
+    initLidar();
+
+    std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+    while (1){
+        std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+
+        if (elapsed_seconds.count() >= 20.0) {
+            break;
+        }
+        if(dataReady = 1){
+            printf("cox time");
+        }
+
     }
-    if(input.cmdOptionExists("--stop")){
-        stopLidar();
-    }
-    if(input.cmdOptionExists("--receive")){
-        listen();
-    }
-    const std::string &filename = input.getCmdOption("-f");
-    if (!filename.empty()){
-        // Do interesting things ...
-    }
+
+    stopLidar();
+
     return 0;
 }
