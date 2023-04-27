@@ -75,13 +75,13 @@ int main(int argc, char** argv)
     if(start = 1){
         s = initLidar();
         if(s != 0){
-            perror("Lidar Init failed")
+            perror("Lidar Init failed");
         }
     }
     else if(stop = 1){
         s = stopLidar();
         if(s != 0){
-            perror("Lidar Stop failed")
+            perror("Lidar Stop failed");
         }
     }
     else if(rec = 1){
