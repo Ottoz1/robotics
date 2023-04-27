@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 {
     //vision_test();
     //cox_test();
-    int start = 1;
+    int start = 0;
     int stop = 0;
     int rec = 0;
     int s;
