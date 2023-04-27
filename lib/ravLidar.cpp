@@ -39,11 +39,13 @@ int sendToLidar(char* message){
         return -1;
     }
         
-    
-
     cli_addr.sin_family = AF_INET;
     cli_addr.sin_port = htons(TCP_PORT);
-    cli_addr.sin_addr.s_addr = htonl(TCP_IP);
+
+    if (inet_pton(AF_INET, "127.0.0.1", &cli_addr.sin_addr) <= 0) {  
+        printf("\nInvalid address/ Address not supported \n");  
+        return -1;  
+    }  
 
     int s = connect(sock, (struct sockaddr*)&cli_addr, sizeof(cli_addr));
     if( s < 0 ){
@@ -73,7 +75,10 @@ int listen(){
     
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(9888);
-    serv_addr.sin_addr.s_addr = htonl(TCP_IP);
+    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {  
+        printf("\nInvalid address/ Address not supported \n");  
+        return -1;  
+    }  
     
     bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
