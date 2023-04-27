@@ -98,7 +98,6 @@ int listen(){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             printf("inside of break\n");
-            break;
         }
         printf("rad 103>:D\n");
         if((int)header[0] == 165){
@@ -119,6 +118,7 @@ int listen(){
                 if(iter >= 200){
                     iter = 0;
                     dataReady = 1;
+                    break;
                 }
             }
 
