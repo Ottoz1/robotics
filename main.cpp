@@ -59,25 +59,33 @@ int main(int argc, char** argv)
     int start = 0;
     int stop = 0;
     int rec = 0;
+    int s;
     for (int i = 0; i < argc; i++){
-    if (strcmp(argv[i], "--start") == 0){
-        start = 1;
+        if (strcmp(argv[i], "--start") == 0){
+            start = 1;
+        }
+        else if (strcmp(argv[i], "--stop") == 0){
+            stop = 1;
+        }
+        else if (strcmp(argv[i], "--receive") == 0){
+            rec = 1;
+        }
     }
-    else if (strcmp(argv[i], "--stop") == 0){
-        stop = 1;
-    }
-    else if (strcmp(argv[i], "--receive") == 0){
-        rec = 1;
-    }
+
     if(start = 1){
-        initLidar();
+        s = initLidar();
+        if(s != 0){
+            perror("Lidar Init failed")
+        }
     }
-    if(stop = 1){
-        stopLidar();
+    else if(stop = 1){
+        s = stopLidar();
+        if(s != 0){
+            perror("Lidar Stop failed")
+        }
     }
-    if(rec = 1){
+    else if(rec = 1){
         listen();
     }
-}
     return 0;
 }
