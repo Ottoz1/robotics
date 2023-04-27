@@ -86,17 +86,30 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
-
+    thread th1(listenLidar());
     InputParser input(argc, argv);
-    if(input.cmdOptionExists("--start")){
-        initLidar();
+    initLidar();
+    time_t start = time(NULL); 
+    while (1){
+        time_t end = time(NULL);
+        double elapsed_seconds = difftime(end, start);
+
+        if (elapsed_seconds >= 20.0) {
+            break;
+        }
+
+        if(dataReady = 1){
+            cout << points;
+            dataReady=0;
+        }
     }
-    if(input.cmdOptionExists("--stop")){
-        stopLidar();
-    }
-    if(input.cmdOptionExists("--receive")){
-        listenLidar();
-    }
+
+    lidarRunning = 0;
+
+    th1.join();
+
+    stopLidar();
+
     return 0;
 }
 
