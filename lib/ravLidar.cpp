@@ -103,8 +103,8 @@ int listenLidar(){
             read(connfd, buffer, data_size);
             int quality = (int)(buffer[0])>>2;
             int angle = (((int)(buffer[1])>>1) + ((int)(buffer[2])<<8))>>7;
-            int theta = angle * (PI / 180);
-            int distance = (((int)(buffer[3])) + ((int)(buffer[4])<<8))>>2;
+            float theta = angle * (PI / 180);
+            float distance = (((float)(buffer[3])) + ((float)(buffer[4])<<8))>>2;
             //printf("radius: %d, angle: %d\n", distance, angle);
 
             points.row(iter) << distance, theta;
