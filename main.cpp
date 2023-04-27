@@ -102,6 +102,7 @@ int main(int argc, char **argv){
         if (elapsed_seconds >= 20.0) {
             break;
         }
+        
         if(dataReady = 1){
             //printf("cox time");
             cout << points;
