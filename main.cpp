@@ -92,6 +92,7 @@ class InputParser{
 
 int main(int argc, char **argv){
     InputParser input(argc, argv);
+    MatrixXf line_segments = generate_lines();
     thread th1(listenLidar);
     initLidar();
 
@@ -111,8 +112,11 @@ int main(int argc, char **argv){
             printf("|---------------|\n");
 
             cart = polar_to_cart(points);
-            cout << cart;
+            //cout << cart;
+            VectorXf transformation = cox_linefit(cart, line_segments, 100);
+            cout << transformation;
             printf("\n|---------------|");
+
             dataReady=0;
         }
     }

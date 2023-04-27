@@ -187,9 +187,9 @@ MatrixXf generate_lines() {
     // Corner points of the box
     float data[4][2] = {
         {0, 0},
-        {0, 100},
-        {200, 100},
-        {200, 0}
+        {0, 235},
+        {295, 235},
+        {295, 0}
     };
 
     // Connect the corner points to form a line
