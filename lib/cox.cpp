@@ -22,7 +22,7 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         MatrixXf targets = assign_points_to_lines(pts, line_segments, normals, &distances, &new_normals);
 
         float mean = distances.mean();
-        cout << "DDDD:" << mean << endl;
+        cout << "\nDDDD:" << mean << endl;
 
         // Setup the variables of the linear system of equations (least squares problem)
         VectorXf y = get_signed_distance(pts, targets, new_normals); // The signed distance from the points to the line segments
