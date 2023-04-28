@@ -14,7 +14,7 @@ find_package(Eigen3 REQUIRED)
 add_compile_options(-std=c++11)
 
 # Add executable target for main.cpp
-add_executable(lab1 main.cpp)
+add_executable(lab2 main.cpp)
 
 # Add include directories for the lib folder, OpenCV and Eigen
 include_directories(lib ${OpenCV_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
