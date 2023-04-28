@@ -104,7 +104,7 @@ int main(int argc, char **argv){
         time_t end = time(NULL);
         double elapsed_seconds = difftime(end, start);
 
-        if (elapsed_seconds >= 100.0) {
+        if (elapsed_seconds >= 20.0) {
             break;
         }
         
@@ -113,7 +113,7 @@ int main(int argc, char **argv){
             printf("|---------------|\n");
 
             cart = polar_to_cart(points);
-            //cout << cart;
+            cout << points;
             VectorXf transformation = cox_linefit(cart, line_segments, 100);
             cout << transformation;
             printf("\n|---------------|");
