@@ -113,7 +113,7 @@ int main(int argc, char **argv){
             printf("|---------------|\n");
 
             cart = polar_to_cart(points);
-            cout << points;
+            //cout << points;
             VectorXf transformation = cox_linefit(cart, line_segments, 100);
             cout << transformation;
             printf("\n|---------------|");
