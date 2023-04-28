@@ -104,7 +104,7 @@ int main(int argc, char **argv){
         time_t end = time(NULL);
         double elapsed_seconds = difftime(end, start);
 
-        if (elapsed_seconds >= 20.0) {
+        if (elapsed_seconds >= 100.0) {
             break;
         }
         
