@@ -27,4 +27,4 @@ add_library(MyLib ${LIB_SOURCES})
 target_link_libraries(MyLib ${OpenCV_LIBS} Eigen3::Eigen)
 
 # Link the executable target with the VisionLib library, OpenCV and Eigen
-target_link_libraries(lab1 MyLib ${OpenCV_LIBS} Eigen3::Eigen)
+target_link_libraries(lab2 MyLib ${OpenCV_LIBS} Eigen3::Eigen)
