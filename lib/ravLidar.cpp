@@ -63,6 +63,9 @@ int sendToLidar(char* message){
 }
 
 int listenLidar(){
+
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr;
 
@@ -97,7 +100,7 @@ int listenLidar(){
         int header_size = read(connfd, header, 5);
         if(header_size != 5){
             close(connfd);
-            break;
+            return 0;
         }
         if((int)header[0] == 165){
             int data_size = ((int)(header[2])<<16) + ((int)(header[3])<<8) + ((int)(header[4]));

@@ -6,7 +6,6 @@
 #include <thread>
 #include <Eigen/Dense>
 #include <unistd.h>
-#include <time.h>
 
 
 MatrixXf points(200,2);
@@ -105,6 +104,7 @@ int main(int argc, char **argv){
         double elapsed_seconds = difftime(end, start);
 
         if (elapsed_seconds >= 100.0) {
+            lidarRunning = 0;
             break;
         }
         
