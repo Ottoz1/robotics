@@ -234,8 +234,29 @@ MatrixXf arrayToMatrix(float* data, int numRows, int numCols)
 MatrixXf polar_to_cart(MatrixXf polar){
     MatrixXf cartesian(200,2);
     cartesian.col(0) = polar.col(0).array() * polar.col(1).array().cos();
-    cartesian.col(1) = polar.col(0).array() * polar.col(1).array().sin();
-    return cartesian;
+    cartesian.col(1) = polar.col(0).array() * polar.col(1).array().sin() * -1;  // y-axis is inverted
+    return cartesian;   
+}
+
+MatrixXf prune_outliers(MatrixXf points, VectorXf *distances_to_wall){
+    float mean = distances_to_wall->mean(); // Find the mean of the distances
+
+    MatrixXf pruned_points = MatrixXf::Zero(points.rows(), 2);
+    VectorXf new_distances = VectorXf::Zero(points.rows());
+    int j = 0;
+    for (int i = 0; i < points.rows(); i++){
+        if (distances_to_wall(i) <= (mean + 50)){  // Allow 50 mm of error
+            pruned_points.row(j) = points.row(i);
+            new_distances(j) = distances_to_wall(i);
+            j++;
+        }
+    }
+
+    MatrixXf new_points = pruned_points.topRows(j); // Remove the extra rows
+    VectorXf new_distances2 = new_distances.head(j); // Remove the extra rows
+
+    *distances_to_wall = new_distances2;
+    return new_points;
 }
 
 MatrixXf transform_points(MatrixXf points, VectorXf transformation)

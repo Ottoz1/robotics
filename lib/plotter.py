@@ -10,6 +10,8 @@ password = '1234'
 remote_path = '/home/pi/robotics/build/points.txt'
 local_path = './points.txt'
 
+env_measures = [890, 560]   # [Width X, Height Y] in mm
+
 # create SSH client and connect to Raspberry Pi
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -33,7 +35,11 @@ def plot_points():
     # iterate over the lines in the file
     for line in lines:
         # split the line into two values, and convert them to floats
-        x, y = map(float, line.split())
+        x, y = 0, 0
+        try:
+            x, y = map(float, line.split())
+        except:
+            return
         # append the x and y values to their respective lists
         x_coords.append(x)
         y_coords.append(y)
@@ -48,6 +54,12 @@ def plot_points():
     # clear the previous plot and plot the new points
     plt.clf()
     plt.plot(x_coords, y_coords, 'o')
+
+    # Plot a box around the points
+    W = env_measures[0]
+    H = env_measures[1]
+    plt.plot([0, 0, W, W, 0], [0, H, H, 0, 0], 'k-')
+
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.title('Points')
@@ -55,8 +67,15 @@ def plot_points():
     plt.pause(1)
 
 # continuously update the plot and the file every second
-while True:
-    plot_points()
+try:
+    while True:
+        plot_points()
 
-    # wait for one second before updating again
-    time.sleep(1)
+# handle the keyboard interrupt (CTRL+C) and exit gracefully
+except KeyboardInterrupt:
+    # check which key was pressed
+
+
+    print('Program terminated by user')
+    ssh.close()
+    plt.close()

@@ -12,6 +12,8 @@ MatrixXf points(200,2);
 int dataReady = 0;
 int lidarRunning = 1;
 
+VectorXf pose(3);
+
 using namespace std;
 using namespace Eigen;
 
@@ -96,6 +98,8 @@ int main(int argc, char **argv){
     initLidar();
     MatrixXf cart;
 
+    pose << 445, 280, M_PI/4;   // Initial pose (x, y, theta)
+
     sleep(2);
 
     time_t start = time(NULL); 
@@ -113,6 +117,7 @@ int main(int argc, char **argv){
             printf("|---------------|\n");
 
             cart = polar_to_cart(points);
+            cart = transform_points(cart, pose);    // Transform the points to the robot's frame of reference
             plot(cart);
             cout << points;
             //VectorXf transformation = cox_linefit(cart, line_segments, 100);
