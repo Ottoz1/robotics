@@ -21,11 +21,8 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         MatrixXf new_normals = MatrixXf::Zero(pts.rows(), 2);
         MatrixXf targets = assign_points_to_lines(pts, line_segments, normals, &distances, &new_normals);
 
-        if(i == 0)
-        {
-            float mean = distances.mean();  // The mean of the distances
-            cout << "Mean: " << mean << endl;
-        }
+        // Prune the outliers
+        prune_outliers(&pts, &distances, &targets, &new_normals);   // This will reduce the number of elements on all these matrices
  
         // Setup the variables of the linear system of equations (least squares problem)
         VectorXf y = get_signed_distance(pts, targets, new_normals); // The signed distance from the points to the line segments
@@ -240,25 +237,31 @@ MatrixXf polar_to_cart(MatrixXf polar){
     return cartesian;   
 }
 
-MatrixXf prune_outliers(MatrixXf points, VectorXf *distances_to_wall){
+void prune_outliers(MatrixXf *pts, MatrixXf *distances_to_wall, MatrixXf *targets, MatrixXf *normals){
     float mean = distances_to_wall->mean(); // Find the mean of the distances
 
-    MatrixXf pruned_points = MatrixXf::Zero(points.rows(), 2);
-    VectorXf new_distances = VectorXf::Zero(points.rows());
+    MatrixXf temp_pts = MatrixXf::Zero((*pts).rows(), 2);
+    MatrixXf temp_dist = VectorXf::Zero((*pts).rows());
+    MatrixXf temp_targets = MatrixXf::Zero((*pts).rows(), 4);
+    MatrixXf temp_normals = MatrixXf::Zero((*pts).rows(), 2);
+
     int j = 0;
-    for (int i = 0; i < points.rows(); i++){
+    for (int i = 0; i < (*pts).rows(); i++){
         if(distances_to_wall->coeffRef(i) < mean + 20){ // If the distance is less than the mean + 20
-            pruned_points.row(j) = points.row(i); // Add the point to the pruned points matrix
-            new_distances(j) = distances_to_wall->coeffRef(i); // Add the distance to the new distances vector
+            temp_pts.row(j) = (*pts).row(i); // Add the point to the pruned points matrix
+            temp_dist.row(j) = (*distances_to_wall).row(i); // Add the distance to the new distances matrix
+            temp_targets.row(j) = (*targets).row(i); // Add the target to the new targets matrix
+            temp_normals.row(j) = (*normals).row(i); // Add the normal to the new normals matrix
             j++;
         }
     }
 
-    MatrixXf new_points = pruned_points.topRows(j); // Remove the extra rows
-    VectorXf new_distances2 = new_distances.head(j); // Remove the extra rows
+    *pts = temp_pts.topRows(j); // Remove the extra rows
+    *distances_to_wall = temp_dist.topRows(j);
+    *targets = temp_targets.topRows(j);
+    *normals = temp_normals.topRows(j);
 
-    *distances_to_wall = new_distances2;
-    return new_points;
+    cout << "Pruned points: " << pts->rows() << endl;
 }
 
 MatrixXf transform_points(MatrixXf points, VectorXf transformation)
