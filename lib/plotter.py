@@ -1,40 +1,62 @@
-import sys
+import paramiko
 import matplotlib.pyplot as plt
-import numpy as np
+import time
+import os
 
-# Get the x and y values of the points from the command-line argument
-data = np.array(sys.argv[1].split(','), dtype=float)
+# configure SSH connection parameters
+hostname = '192.168.1.24'
+username = 'pi'
+password = '1234'
+remote_path = '/home/pi/robotics/build/points.txt'
+local_path = './points.txt'
 
-# Split the data into two arrays with equal length
-x_points = data[0::2]
-y_points = data[1::2]
+# create SSH client and connect to Raspberry Pi
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(hostname=hostname, username=username, password=password)
 
-# Create a 2D array with the x and y values of the points
-points = np.column_stack((x_points, y_points))
+def plot_points():
+    # download the points.txt file from the Raspberry Pi
+    sftp = ssh.open_sftp()
+    sftp.get(remote_path, local_path)
+    sftp.close()
 
-# Get the x and y values of the line segments from the command-line argument
-data = np.array(sys.argv[2].split(','), dtype=float)
+    # open the points.txt file for reading
+    with open('points.txt', 'r') as f:
+        # read the contents of the file into a list of lines
+        lines = f.readlines()
 
-# Split the data into two arrays with equal length
-x_lines = data[0::2]
-y_lines = data[1::2]
+    # create empty lists to store x and y coordinates
+    x_coords = []
+    y_coords = []
 
-# Create a 2D array with the x and y values of the line segments
-lines = np.column_stack((x_lines, y_lines))
+    # iterate over the lines in the file
+    for line in lines:
+        # split the line into two values, and convert them to floats
+        x, y = map(float, line.split())
+        # append the x and y values to their respective lists
+        x_coords.append(x)
+        y_coords.append(y)
 
-# Get the title from the command-line argument
-title = sys.argv[3]
+    # remove the points.txt after reading it
+    os.remove('points.txt')
 
-# Create a scatter plot of the points
-plt.scatter(points[:, 0], points[:, 1])
+    # Check if we have less than 10 points
+    if len(x_coords) < 10:
+        return
 
-# Create a line plot of the line segments
-plt.plot(lines[:, 0], lines[:, 1], '-', color='red')
+    # clear the previous plot and plot the new points
+    plt.clf()
+    plt.plot(x_coords, y_coords, 'o')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Points')
+    plt.draw()
+    plt.pause(1)
 
-# Add axis labels and a title
-plt.xlabel('X values')
-plt.ylabel('Y values')
-plt.title(title)
+# continuously update the plot and the file every second
+while True:
+    plot_points()
 
-# Show the plot
-plt.show()
+    # wait for one second before updating again
+    time.sleep(1)

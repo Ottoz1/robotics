@@ -184,6 +184,14 @@ MatrixXf find_normals(MatrixXf lines){
 // This function is only used for plotting
 // It uses python and string which may not be available in the Pi
 // It should not be used in the final version
+void plot(MatrixXf points)
+{
+    // Save the points to a file
+    std::ofstream file;
+    file.open("/home/pi/robotics/build/points.txt");
+    file << points;
+    file.close();
+}
 
 
 MatrixXf generate_lines() {

@@ -15,5 +15,5 @@ MatrixXf transform_points(MatrixXf points, VectorXf transformation);
 float point_segment_distance(VectorXf point, VectorXf line_segment);
 MatrixXf generate_data();
 MatrixXf arrayToMatrix(float* data, int numRows, int numCols);
-void plot(MatrixXf points, MatrixXf lines, char* title);
+void plot(MatrixXf points);
 MatrixXf generate_lines();
