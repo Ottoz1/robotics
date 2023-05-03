@@ -98,7 +98,7 @@ int main(int argc, char **argv){
     initLidar();
     MatrixXf cart;
 
-    pose << 445, 280, M_PI/4;   // Initial pose (x, y, theta)
+    pose << 445, 280, 0;   // Initial pose (x, y, theta)
 
     sleep(2);
 
@@ -117,10 +117,16 @@ int main(int argc, char **argv){
             printf("|---------------|\n");
 
             cart = polar_to_cart(points);
-            cart = transform_points(cart, pose);    // Transform the points to the robot's frame of reference
+            cart = transform_points(cart, pose);    // Laser to world frame
+
             VectorXf transformation = cox_linefit(cart, line_segments, 100);
             cout << transformation;
-            cart = transform_points(cart, transformation);
+
+            cart = transform_points(cart, transformation);  // Transform points to align with lines
+            pose(0) += transformation(0);
+            pose(1) += transformation(1);
+            pose(2) += transformation(2);
+
             plot(cart);
             printf("\n|---------------|");
 

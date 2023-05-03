@@ -260,8 +260,6 @@ void prune_outliers(MatrixXf *pts, MatrixXf *distances_to_wall, MatrixXf *target
     *distances_to_wall = temp_dist.topRows(j);
     *targets = temp_targets.topRows(j);
     *normals = temp_normals.topRows(j);
-
-    cout << "Pruned points: " << pts->rows() << endl;
 }
 
 MatrixXf transform_points(MatrixXf points, VectorXf transformation)
