@@ -21,8 +21,11 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         MatrixXf new_normals = MatrixXf::Zero(pts.rows(), 2);
         MatrixXf targets = assign_points_to_lines(pts, line_segments, normals, &distances, &new_normals);
 
-        float mean = distances.mean();
-        printf("DD: %f", mean);
+        if(i == 0)
+        {
+            float mean = distances.mean();  // The mean of the distances
+            cout << "Mean: " << mean << endl;
+        }
  
         // Setup the variables of the linear system of equations (least squares problem)
         VectorXf y = get_signed_distance(pts, targets, new_normals); // The signed distance from the points to the line segments
@@ -88,7 +91,7 @@ MatrixXf assign_points_to_lines(MatrixXf points, MatrixXf line_segments, MatrixX
 
     for (int i = 0; i < n; i++){    // Loop through all points
         int min_index = 0;  // The index of the line segment with the smallest distance
-        float min_dist = 1000000.0f;    // The smallest distance
+        float min_dist = 1000000.0f;    // Some big number
         for (int j = 0; j < m; j++){    // Loop through all lines
             float dist = point_segment_distance(points.row(i), line_segments.row(j)); // The distance from the point to the line segment
             if (dist < min_dist){   // If the distance is smaller than the smallest distance
@@ -181,9 +184,8 @@ MatrixXf find_normals(MatrixXf lines){
     return normals;
 }
 
-// This function is only used for plotting
-// It uses python and string which may not be available in the Pi
-// It should not be used in the final version
+// This function stores the points in a file
+// A python script is used to plot the points while listening to the file
 void plot(MatrixXf points)
 {
     // Save the points to a file
@@ -198,9 +200,9 @@ MatrixXf generate_lines() {
     // Corner points of the box
     float data[4][2] = {
         {0, 0},
-        {0, 2430},
-        {3630, 2430},
-        {3630, 0}
+        {0, 560},
+        {890, 560},
+        {890, 0}
     };
 
     // Connect the corner points to form a line
@@ -245,9 +247,9 @@ MatrixXf prune_outliers(MatrixXf points, VectorXf *distances_to_wall){
     VectorXf new_distances = VectorXf::Zero(points.rows());
     int j = 0;
     for (int i = 0; i < points.rows(); i++){
-        if (distances_to_wall(i) <= (mean + 50)){  // Allow 50 mm of error
-            pruned_points.row(j) = points.row(i);
-            new_distances(j) = distances_to_wall(i);
+        if(distances_to_wall->coeffRef(i) < mean + 20){ // If the distance is less than the mean + 20
+            pruned_points.row(j) = points.row(i); // Add the point to the pruned points matrix
+            new_distances(j) = distances_to_wall->coeffRef(i); // Add the distance to the new distances vector
             j++;
         }
     }

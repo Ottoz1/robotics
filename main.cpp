@@ -118,10 +118,10 @@ int main(int argc, char **argv){
 
             cart = polar_to_cart(points);
             cart = transform_points(cart, pose);    // Transform the points to the robot's frame of reference
+            VectorXf transformation = cox_linefit(cart, line_segments, 100);
+            cout << transformation;
+            cart = transform_points(cart, transformation);
             plot(cart);
-            cout << points;
-            //VectorXf transformation = cox_linefit(cart, line_segments, 100);
-            //cout << transformation;
             printf("\n|---------------|");
 
             dataReady=0;
