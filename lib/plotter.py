@@ -4,13 +4,13 @@ import time
 import os
 
 # configure SSH connection parameters
-hostname = '192.168.1.24'
+hostname = '192.168.90.33'
 username = 'pi'
 password = '1234'
 remote_path = '/home/pi/robotics/build/points.txt'
 local_path = './points.txt'
 
-env_measures = [890, 560]   # [Width X, Height Y] in mm
+env_measures = [3630, 2420]   # [Width X, Height Y] in mm
 
 # create SSH client and connect to Raspberry Pi
 ssh = paramiko.SSHClient()

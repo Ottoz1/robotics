@@ -2,9 +2,11 @@
 
 using namespace std;
 
-int speedProfile::setNewGoal(float distance){
+int speedProfile::setNewGoal(Eigen::Vector2f goal){
     if (status != 1){
-        this->distance = distance;
+        this->endPos = goal;
+        this->distance = sqrt(pow(endPos[0] - startPos[0], 2) + pow(endPos[1] - startPos[1], 2));
+        this->angle = atan2(endPos[1],endPos[0]);
         return 0;
     }
     else{
@@ -19,20 +21,19 @@ speedProfile::speedProfile(Eigen::Vector2f startPos, Eigen::Vector2f endPos, flo
     this->direction = direction;
 
     //robot constants
-    this->sampleTime = 0.1;
+    this->sampleTime = 0.01;
     this->maxVelocity = 10;    
-    this->radius = 0.1;
+    //wheel radius
+    this->radius = 1;
+    //distance between wheels
     this->wheelBase = 0.2;
 
     //program variables
-    this->breakDistance = 0;
-    this->position = 0;
     this->velocity = 0;
-    this->acceleration = 2;
+    this->acceleration = 1;
     //distance between start and end position
     this->distance = sqrt(pow(endPos[0] - startPos[0], 2) + pow(endPos[1] - startPos[1], 2));
-    this->angle = atan2(endPos[1] - startPos[1], endPos[0] - startPos[0]) + (direction * (M_PI / 180));
-
+    this->angle = atan2(endPos[1],endPos[0]);
 }
 
 speedProfile::~speedProfile(){
@@ -54,12 +55,36 @@ void speedProfile::decelerate(){
     return;
 }
 
-void speedProfile::turn(){
+void speedProfile::run(){
+    //get speed profile for turning
+    //convert to wheel velocities
+    //append to wheelVelocities
+    //get speed profile for straight line
+    //convert to wheel velocities
+    //append to wheelVelocities
+
+    std::vector<std::vector<float>> turningVelocities;
+    std::vector<std::vector<float>> straightVelocities;
+    cout << "angle: " << angle << endl;
+    getSpeedProfile(angle);
+
+    turningVelocities = getWheelTurnVelocities();
+
+
+    getSpeedProfile(distance);
+    straightVelocities = getWheelVelocities();
+
+    for (int i = 0; i < turningVelocities.size(); i++){
+        wheelVelocities.push_back(turningVelocities[i]);
+    }
+
 }
 
-void speedProfile::run(){
+void speedProfile::getSpeedProfile(float dist){
+    float position = 0;
+    double breakDistance = 0;
     status = 1;
-    while ((position + breakDistance)<= distance){
+    while ((position + breakDistance)<= dist){
         if(velocity < maxVelocity){
             accelerate();
         } 
@@ -72,19 +97,22 @@ void speedProfile::run(){
         speeds.push_back(velocity);
         positions.push_back(position);
     }
-    while (position <= distance && velocity > 0){
+    while (position <= dist && velocity > 0){
         decelerate();
         position += velocity * sampleTime;
         speeds.push_back(velocity);
         positions.push_back(position);
     }
     status = 2;
+    return;
 }
 
 int speedProfile::getStatus(){
     return this->status;
 }
-
+int speedProfile::getAngle(){
+    return this->angle;
+}
 int speedProfile::getSampleTime(){
     return this->sampleTime;
 }
@@ -97,10 +125,28 @@ std::vector<float> speedProfile::getPositions(){
     return positions;
 }
 
-std::vector<float> speedProfile::getWheelVelocities(float velocity){
-    //wheel velocities = velocity / wheel radius
-    std::vector<float> wheelVelocities;
+std::vector<std::vector<float>> speedProfile::getWheelVelocities(){
+    // wheelVelocities = [leftWheel, rightWheel]
+    std::vector<std::vector<float>> wheelVelocities;
     for (int i = 0; i < speeds.size(); i++){
-        wheelVelocities.push_back(speeds[i] / radius);
+        wheelVelocities.push_back({speeds[i] / radius, speeds[i] / radius});
     }
+    return wheelVelocities;
+}
+
+std::vector<std::vector<float>> speedProfile::getWheelTurnVelocities(){
+    // wheelVelocities = [leftWheel, rightWheel]
+    std::vector<std::vector<float>> wheelVelocities;
+    //if the angle in radians is negative, turn left
+    if(angle > 0){
+        for (int i = 0; i < speeds.size(); i++){
+            wheelVelocities.push_back({speeds[i] / radius, -speeds[i] / radius});
+        }
+    }
+    else{
+        for (int i = 0; i < speeds.size(); i++){
+            wheelVelocities.push_back({-speeds[i] / radius, speeds[i] / radius});
+        }
+    }
+    return wheelVelocities;
 }

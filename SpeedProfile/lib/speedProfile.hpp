@@ -7,10 +7,8 @@
 
 class speedProfile{
     //program variables
-    float position;
     float velocity;
     float acceleration;
-    double breakDistance;
     float distance;
     float angle;
 
@@ -28,7 +26,10 @@ class speedProfile{
     //mainly for plotting
     std::vector<float> speeds;
     std::vector<float> positions;
-    float direction;
+
+    //outputs 
+    // wheel velocities = {left, right}
+    std::vector<std::vector<float>> wheelVelocities;
 
     /*
         0 = not started
@@ -38,14 +39,14 @@ class speedProfile{
     int status = 0;
 
     public:
-        int setNewGoal(float goal);
+        int setNewGoal(Eigen::Vector2f goal);
 
         /*
             goal: goal position
             sampleTime: time between each sample
             maxVelocity: maximum velocity
         */
-        speedProfile(float goal, float sampleTime, float maxVelocity);
+        speedProfile(Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction);
 
         ~speedProfile();
 
@@ -57,10 +58,14 @@ class speedProfile{
         void run();
 
         int getStatus();
-
+        int getAngle();
         int getSampleTime();
 
         std::vector<float> getSpeeds();
         std::vector<float> getPositions();
 
+        void getSpeedProfile(float dist);
+
+        std::vector<std::vector<float>> getWheelVelocities();
+        std::vector<std::vector<float>> getWheelTurnVelocities();
 };
