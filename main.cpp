@@ -1,6 +1,7 @@
 #include "lib/ravCam.hpp"
 #include "lib/cox.hpp"
 #include "lib/ravLidar.hpp"
+#include "lib/motors.hpp"
 #include <time.h>
 #include <iostream>
 #include <thread>
@@ -96,8 +97,22 @@ class InputParser{
         std::vector <std::string> tokens;
 };
 
+void motor_test(){
+    init_motors();
+    while (1)
+    {
+        delay(50);
+        call_motors(3000, 1000);
+        if (encoders_ready)
+        {
+            printf("Left encoder: %d\n", l_encoder);
+            printf("Right encoder: %d\n", r_encoder);
+        }
+    }
+}
+
 int main(int argc, char **argv){
-    cox_test();
+    motor_test();
     return 0;
     InputParser input(argc, argv);
     MatrixXf line_segments = generate_lines();
