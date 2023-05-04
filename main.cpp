@@ -48,18 +48,23 @@ void cox_test()
     MatrixXf points = generate_data();  // Generate some random points
     MatrixXf line_segments = generate_lines();  // Generate lines
 
+    // Multiply the points by 100 to make them more realistic
+    points *= 2;
+
     // Define data types for start, stop, and duration variables
     clock_t start;
     clock_t end;
     double duration;
 
+    MatrixXf cov = MatrixXf::Zero(3,3);
     start = clock();
-    VectorXf transformation = cox_linefit(points, line_segments, 100);
+    VectorXf transformation = cox_linefit(points, line_segments, 100, &cov);
     end = clock();
 
     points = transform_points(points, transformation);
 
     cout << "Transformation: \n" << transformation << endl;
+    cout << "Covariance: \n" << cov << endl;
 
     duration = ((double)(end - start))/CLOCKS_PER_SEC;
     duration *= 1000;
@@ -92,6 +97,8 @@ class InputParser{
 };
 
 int main(int argc, char **argv){
+    cox_test();
+    return 0;
     InputParser input(argc, argv);
     MatrixXf line_segments = generate_lines();
     thread th1(listenLidar);
@@ -119,7 +126,8 @@ int main(int argc, char **argv){
             cart = polar_to_cart(points);
             cart = transform_points(cart, pose);    // Laser to world frame
 
-            VectorXf transformation = cox_linefit(cart, line_segments, 100);
+            MatrixXf cov = MatrixXf::Zero(3,3);
+            VectorXf transformation = cox_linefit(cart, line_segments, 100, &cov);
             cout << transformation;
 
             cart = transform_points(cart, transformation);  // Transform points to align with lines

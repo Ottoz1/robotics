@@ -1,11 +1,12 @@
 #include "cox.hpp"
 
-VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
+VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter, MatrixXf *covariance)
 {
     // The translation and rotation to be returned
     float ddx = 0.0f;
     float ddy = 0.0f;
     float dda = 0.0f;
+    MatrixXf cov = MatrixXf::Zero(3, 3);
 
     // Create a copy of the points (we don't want to modify the original)
     MatrixXf pts = points;
@@ -49,6 +50,12 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         // Ab = y => A^T * A * b = A^T * y => b = (A^T * A)^-1 * A^T * y
         VectorXf b = (A.transpose() * A).inverse() * A.transpose() * y;
 
+        // Calculate the covariance matrix
+        int n = pts.rows();
+        MatrixXf res = y - A * b;  // The residuals
+        float sigma = (res.transpose() * res / (n - 4)).sum() / res.size(); // The variance
+        cov = sigma * (A.transpose() * A).inverse(); // The covariance matrix
+
         // Update the translation and rotation
         ddx += b(0);
         ddy += b(1);
@@ -64,11 +71,13 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter)
         {
             VectorXf result(3);
             result << ddx, ddy, dda;
+            *covariance = cov;
             return result;
         }
     }
     VectorXf result(3);
     result << ddx, ddy, dda;
+    *covariance = cov;
     return result;
 }
 

@@ -151,6 +151,13 @@ def cox_linefit(points, line_model, max_iter):
         ddy += dy
         dda += da
 
+        # Calculate the covariance matrix
+        n = len(points) # Number of data points
+        res = y - np.dot(A, b)  # Residuals
+        sigma = np.dot(res.T, res) / (n - 4)    # Variance estimate
+        C = sigma * np.linalg.pinv(np.dot(A.T, A))  # Covariance matrix
+        print('Covariance matrix: \n{}'.format(C))
+
         # Apply the translation and rotation
         R = np.array([[np.cos(dda), -np.sin(dda), ddx], [np.sin(dda), np.cos(dda), ddy], [0, 0, 1]])
         points = np.dot(point_copy, R.T)
