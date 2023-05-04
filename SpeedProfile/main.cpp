@@ -1,11 +1,19 @@
 #include "lib/matplotlibcpp.h"
 #include "speedProfile.hpp"
+#include <iostream>
+#include <vector>
+#include <Eigen/Dense>
 
 using namespace std;
 
 int main() {
 
-    speedProfile sp(70, 0.01, 10);
+    Eigen::Vector2f startPos(0, 0);
+    Eigen::Vector2f endPos(30, 14);
+
+    
+
+    speedProfile sp(startPos, endPos, 0);
 
     sp.run();
 
@@ -23,6 +31,8 @@ int main() {
     for (int i = 0; i < speeds.size(); i++){
         cout << speeds[i] << endl;
     }
+    //print angle between startPos and endPos
+    cout << "angle: " << sp.getAngle()<< endl;
 
     matplotlibcpp::plot(timeStamps, speeds);
     matplotlibcpp::plot(timeStamps, positions);
