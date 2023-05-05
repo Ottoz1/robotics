@@ -9,3 +9,4 @@ extern int encoders_ready;     // Flag to indicate if encoders are ready
 
 void call_motors(signed int l_speed, signed int r_speed);
 void init_motors();
+void test_motors();

@@ -1,13 +1,18 @@
 #include "lib/ravCam.hpp"
 #include "lib/cox.hpp"
 #include "lib/ravLidar.hpp"
-#include "lib/motors.hpp"
+//#include "lib/motors.hpp"
 #include <time.h>
 #include <iostream>
 #include <thread>
 #include <Eigen/Dense>
 #include <unistd.h>
-
+#include <wiringPi.h>
+#include <stdio.h>
+#include <wiringPiSPI.h>
+extern "C" {
+    #include "lib/spi_com.h"
+}
 
 MatrixXf points(200,2);
 int dataReady = 0;
@@ -97,18 +102,47 @@ class InputParser{
         std::vector <std::string> tokens;
 };
 
+
+MotorDataType MotorData;
+
+static const int SPI_Channel = 1;
+
+short Des_Speed = 0;
+int SS = 0;
+int Counter = 0;
 void motor_test(){
-    init_motors();
-    while (1)
-    {
-        delay(50);
-        call_motors(3000, 1000);
-        if (encoders_ready)
-        {
-            printf("Left encoder: %d\n", l_encoder);
-            printf("Right encoder: %d\n", r_encoder);
-        }
-    }
+    wiringPiSetup(); 
+	wiringPiSPISetup(SPI_Channel, 1000000);
+	
+	while(1){
+		delay(50);
+		Counter++;
+		if(Counter > 40){
+			Counter =0;
+			switch(SS){
+				case 0:
+					Des_Speed = 3000;
+					SS = 1;
+				break;
+				case 1:
+					Des_Speed = -3000;
+					SS = 2;
+				break;
+				case 2:
+					Des_Speed = -3000;
+					SS = 3;
+				break;
+				case 3:
+					Des_Speed = 0;
+					SS = 0;
+				break;
+			}
+			printf("Speed_M1=%d Speed_M2=%d Enkoder_M1= %d Enkoder_M2 %d\n", MotorData.Act_Speed_M1,MotorData.Act_Speed_M2,MotorData.Encoder_M1,MotorData.Encoder_M2);
+		}
+		MotorData.Set_Speed_M1=Des_Speed;
+		MotorData.Set_Speed_M2=150;
+		Send_Read_Motor_Data(&MotorData);
+	}
 }
 
 int main(int argc, char **argv){
