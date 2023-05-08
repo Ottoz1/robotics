@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <cassert>
 
 class speedProfile{
     //program variables
@@ -22,14 +23,19 @@ class speedProfile{
     float maxVelocity;
     float radius;
     float wheelBase;
+    float motorValue;
 
     //mainly for plotting
     std::vector<float> speeds;
     std::vector<float> positions;
-
-    //outputs 
     // wheel velocities = {left, right}
     std::vector<std::vector<float>> wheelVelocities;
+
+    //outputs
+    //eeeeh temp ugly global kill me
+    std::vector<std::vector<float>> profiles;
+
+    std::vector<std::vector<float>> wheelProfiles;
 
     /*
         0 = not started
@@ -54,18 +60,19 @@ class speedProfile{
         void holdVelocity();
         void decelerate();
 
-        void turn();
         void run();
 
         int getStatus();
         int getAngle();
         int getSampleTime();
-
         std::vector<float> getSpeeds();
         std::vector<float> getPositions();
+        std::vector<std::vector<float>> getWheelVelocities();
 
         void getSpeedProfile(float dist);
 
-        std::vector<std::vector<float>> getWheelVelocities();
-        std::vector<std::vector<float>> getWheelTurnVelocities();
+        std::vector<std::vector<float>> wheelVelocities();
+        std::vector<std::vector<float>> wheelTurnVelocities();
+        std::vector<std::vector<float>> wheelProfiles();
+        std::vector<std::vector<float>> wheelTurnProfiles();
 };
