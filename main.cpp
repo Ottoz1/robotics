@@ -7,10 +7,10 @@
 #include <thread>
 #include <Eigen/Dense>
 #include <unistd.h>
-#include <wiringPi.h>
 #include <stdio.h>
-#include <wiringPiSPI.h>
 extern "C" {
+    #include <wiringPi.h>
+    #include <wiringPiSPI.h>
     #include "lib/spi_com.h"
 }
 

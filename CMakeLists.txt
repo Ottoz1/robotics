@@ -18,7 +18,7 @@ find_library(WIRING libwiringPi.so)
 add_compile_options(-std=c++11)
 
 # Add executable target for main.cpp
-add_executable(lab3 testa_spi.c)
+add_executable(lab3 main.cpp)
 
 # Add include directories for the lib folder, OpenCV and Eigen
 include_directories(lib ${OpenCV_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
