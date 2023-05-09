@@ -81,8 +81,8 @@ void speedProfile::run(){
     std::vector<std::vector<float>> straightProfiles;
     getSpeedProfile(angle * (wheelBase / 2));
 
-    turningVelocities = wheelTurnVelocities();
-    turningProfiles = wheelTurnProfiles();
+    turningVelocities = calcWheelTurnVelocities();
+    turningProfiles = calcWheelTurnProfiles();
 
     positions.clear();
     speeds.clear();
@@ -92,8 +92,8 @@ void speedProfile::run(){
     assert(speeds.size() == 0);
 
     getSpeedProfile(distance);
-    straightVelocities = wheelVelocities();
-    straightProfiles = wheelProfiles();
+    straightVelocities = calcWheelVelocities();
+    straightProfiles = calcWheelProfiles();
 
     for (int i = 0; i < turningVelocities.size(); i++){
         wheelVelocities.push_back(turningVelocities[i]);
@@ -118,14 +118,14 @@ void speedProfile::getSpeedProfile(float dist){
         breakDistance = pow(velocity, 2) / (2 * abs(acceleration));
 
         speeds.push_back(velocity);
-        profiles.push_back(motorValue)
+        profiles.push_back(motorValue);
         positions.push_back(position);
     }
     while (position <= dist && velocity > 0){
         decelerate();
         position += velocity * sampleTime;
         speeds.push_back(velocity);
-        profiles.push_back(0)
+        profiles.push_back(0);
         positions.push_back(position);
     }
     status = 2;
@@ -149,12 +149,12 @@ std::vector<float> speedProfile::getPositions(){
     return positions;
 }
 
-std::vector<std::vector<float>> getWheelVelocities(){
-    return wheelVelocities;
+std::vector<std::vector<float>> speedProfile::getWheelVelocities(){
+    return this->wheelVelocities;
 }
 
 
-std::vector<std::vector<float>> speedProfile::wheelVelocities(){
+std::vector<std::vector<float>> speedProfile::calcWheelVelocities(){
     // wheelVelocities = [leftWheel, rightWheel]
     std::vector<std::vector<float>> wheelVel;
     for (int i = 0; i < speeds.size(); i++){
@@ -163,7 +163,7 @@ std::vector<std::vector<float>> speedProfile::wheelVelocities(){
     return wheelVel;
 }
 
-std::vector<std::vector<float>> speedProfile::wheelTurnVelocities(){
+std::vector<std::vector<float>> speedProfile::calcWheelTurnVelocities(){
     // wheelVelocities = [leftWheel, rightWheel]
     std::vector<std::vector<float>> wheelVel;
     //if the angle in radians is negative, turn left
@@ -180,16 +180,16 @@ std::vector<std::vector<float>> speedProfile::wheelTurnVelocities(){
     return wheelVel;
 }
 
-std::vector<std::vector<float>> speedProfile::wheelProfiles(){
+std::vector<std::vector<float>> speedProfile::calcWheelProfiles(){
     // wheelVelocities = [leftWheel, rightWheel]
     std::vector<std::vector<float>> wheelProf;
-    for (int i = 0; i < profiels.size(); i++){
+    for (int i = 0; i < profiles.size(); i++){
         wheelProf.push_back({profiles[i], profiles[i]});
     }
     return wheelProf;
 }
 
-std::vector<std::vector<float>> speedProfile::wheelTurnProfiles(){
+std::vector<std::vector<float>> speedProfile::calcWheelTurnProfiles(){
     // wheelVelocities = [leftWheel, rightWheel]
     std::vector<std::vector<float>> wheelProf;
     if(angle > 0){

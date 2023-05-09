@@ -33,7 +33,7 @@ class speedProfile{
 
     //outputs
     //eeeeh temp ugly global kill me
-    std::vector<std::vector<float>> profiles;
+    std::vector<float> profiles;
 
     std::vector<std::vector<float>> wheelProfiles;
 
@@ -71,8 +71,8 @@ class speedProfile{
 
         void getSpeedProfile(float dist);
 
-        std::vector<std::vector<float>> wheelVelocities();
-        std::vector<std::vector<float>> wheelTurnVelocities();
-        std::vector<std::vector<float>> wheelProfiles();
-        std::vector<std::vector<float>> wheelTurnProfiles();
+        std::vector<std::vector<float>> calcWheelVelocities();
+        std::vector<std::vector<float>> calcWheelTurnVelocities();
+        std::vector<std::vector<float>> calcWheelProfiles();
+        std::vector<std::vector<float>> calcWheelTurnProfiles();
 };
