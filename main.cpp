@@ -107,48 +107,45 @@ MotorDataType MotorData;
 
 static const int SPI_Channel = 1;
 
-short Des_Speed = 0;
-int SS = 0;
-int Counter = 0;
-void motor_test(){
+void motor_test(short m1_speed, short m2_speed){
     wiringPiSetup(); 
 	wiringPiSPISetup(SPI_Channel, 1000000);
 	
 	while(1){
 		delay(50);
-		Counter++;
-		if(Counter > 40){
-			Counter =0;
-			switch(SS){
-				case 0:
-					Des_Speed = 3000;
-					SS = 1;
-				break;
-				case 1:
-					Des_Speed = -3000;
-					SS = 2;
-				break;
-				case 2:
-					Des_Speed = -3000;
-					SS = 3;
-				break;
-				case 3:
-					Des_Speed = 0;
-					SS = 0;
-				break;
-			}
-			printf("Speed_M1=%d Speed_M2=%d Enkoder_M1= %d Enkoder_M2 %d\n", MotorData.Act_Speed_M1,MotorData.Act_Speed_M2,MotorData.Encoder_M1,MotorData.Encoder_M2);
-		}
-		MotorData.Set_Speed_M1=Des_Speed;
-		MotorData.Set_Speed_M2=150;
+		MotorData.Set_Speed_M1=m1_speed;
+		MotorData.Set_Speed_M2=m2_speed;
 		Send_Read_Motor_Data(&MotorData);
+        printf("Speed_M1=%d Speed_M2=%d Enkoder_M1= %d Enkoder_M2 %d\n", MotorData.Act_Speed_M1,MotorData.Act_Speed_M2,MotorData.Encoder_M1,MotorData.Encoder_M2);
 	}
 }
 
 int main(int argc, char **argv){
-    motor_test();
-    return 0;
+    short right_speed;
+    short left_speed;
+
+    // Get input arguments and set motor speeds accordingly
     InputParser input(argc, argv);
+    if(input.cmdOptionExists("-l")){
+        right_speed = stoi(input.getCmdOption("-l"));
+    }
+    else{
+        right_speed = 0;
+    }
+
+    if(input.cmdOptionExists("-r")){
+        left_speed = stoi(input.getCmdOption("-r"));
+    }
+    else{
+        left_speed = 0;
+    }
+
+    cout << "Left speed: " << left_speed << endl;
+    cout << "Right speed: " << right_speed << endl;
+
+    motor_test(right_speed, left_speed);
+    return 0;
+
     MatrixXf line_segments = generate_lines();
     thread th1(listenLidar);
     initLidar();

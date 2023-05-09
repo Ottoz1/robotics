@@ -25,7 +25,7 @@ int main(void){
 			Counter =0;
 			switch(Select){
 				case 0:
-					Des_Speed = 3000;
+					Des_Speed = -3000;
 					Select = 1;
 				break;
 				case 1:
@@ -37,14 +37,14 @@ int main(void){
 					Select = 3;
 				break;
 				case 3:
-					Des_Speed = 0;
+					Des_Speed = -3000;
 					Select = 0;
 				break;
 			}
 			printf("Speed_M1=%d Speed_M2=%d Enkoder_M1= %d Enkoder_M2 %d\n", MotorData.Act_Speed_M1,MotorData.Act_Speed_M2,MotorData.Encoder_M1,MotorData.Encoder_M2);
 		}
 		MotorData.Set_Speed_M1=Des_Speed;
-		MotorData.Set_Speed_M2=150;
+		MotorData.Set_Speed_M2=3000;
 		Send_Read_Motor_Data(&MotorData);
 	}
 }
