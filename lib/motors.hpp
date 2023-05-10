@@ -5,11 +5,18 @@ extern "C" {
     #include "spi_com.h"
 }
 
-extern int l_encoder;   // Left encoder value
-extern int r_encoder;   // Right encoder value
+// Motor 1 = left
+// Motor 2 = right   
+
 extern int encoders_ready;     // Flag to indicate if encoders are ready
-extern int m1_speed;
-extern int m2_speed;
 
 void call_motors(int l_speed, int r_speed);
 void init_motors();
+
+// Get functions..
+float get_delta_D();
+float get_delta_theta();
+int get_l_encoder();
+int get_r_encoder();
+int get_l_motorSpeed();
+int get_r_motorSpeed();

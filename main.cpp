@@ -97,12 +97,14 @@ class InputParser{
         std::vector <std::string> tokens;
 };
 
-void motor_test(short m1_speed_, short m2_speed_){
+void motor_test(short ml_speed_, short mr_speed_){
     init_motors();	
 	while(1){
-		delay(50);
-		call_motors(m1_speed_, m2_speed_);
-        printf("Speed_M1=%d Speed_M2=%d Enkoder_M1= %d Enkoder_M2 %d\n",m1_speed,m2_speed,l_encoder,r_encoder);
+		delay(100);
+		call_motors(ml_speed_, mr_speed_);
+        printf("S_Ml=%d S_Mr=%d Enc_Ml= %d Enc_Mr %d\n",get_l_motorSpeed(),get_r_motorSpeed(),get_l_encoder(),get_r_encoder());
+        printf("dD=%f dT=%f\n",get_delta_D(),get_delta_theta());
+        printf("__________________________\n");
 	}
 }
 
@@ -129,7 +131,7 @@ int main(int argc, char **argv){
     cout << "Left speed: " << left_speed << endl;
     cout << "Right speed: " << right_speed << endl;
 
-    motor_test(right_speed, left_speed);
+    motor_test(left_speed, right_speed);
     return 0;
 
     MatrixXf line_segments = generate_lines();
