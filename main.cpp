@@ -98,12 +98,16 @@ class InputParser{
 };
 
 void motor_test(short ml_speed_, short mr_speed_){
-    init_motors();	
+    init_motors();
+    pose << 0, 0, 0;   // Initial pose (x, y, theta)
 	while(1){
 		delay(100);
 		call_motors(ml_speed_, mr_speed_);
         printf("S_Ml=%d S_Mr=%d Enc_Ml= %d Enc_Mr %d\n",get_l_motorSpeed(),get_r_motorSpeed(),get_l_encoder(),get_r_encoder());
-        printf("dD=%f dT=%f\n",get_delta_D(),get_delta_theta());
+        float dD = get_delta_D();
+        printf("dD=%f dT=%f\n",dD,get_delta_theta());
+        pose(1) += dD;
+        printf("x=%f y=%f theta=%f\n",pose(0),pose(1),pose(2));
         printf("__________________________\n");
 	}
 }
