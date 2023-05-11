@@ -16,6 +16,13 @@ using namespace Eigen;
 
 VectorXf pose(3);
 
+int new_pos_ready = 0;
+int lidarRunning = 1;
+MatrixXf points = MatrixXf::Zero(200,2);
+VectorXf pos = VectorXf::Zero(3);
+MatrixXf cov = MatrixXf::Zero(3, 3);
+int dataReady = 0;
+
 void vision_test()
 {
     // Load the image
@@ -115,16 +122,6 @@ void motor_test(short ml_speed_, short mr_speed_){
 void init_robot(){
     VectorXf start_pose(3);
     start_pose << 190, 1220, 0;  // Initial pose (x, y, theta)
-
-    //--Points used to transfer points between threads--//
-    //Initialized before threads are started
-    MatrixXf points(200,2);
-    //--Pos used to transfer points between threads--//
-    //Initialized before threads are started
-    VectorXf pos(3) = VectorXf::Zero(3);
-    MatrixXf cov(3, 3) = MatrixXf::Zero(3, 3);
-    int new_pos_ready = 0;
-
     init_motors();
     init_odometry(start_pose);
     initLidar();
@@ -134,7 +131,6 @@ void kalman_test(short ml_speed_, short mr_speed_){
     init_robot();
     thread th1(listenLidar);
     thread th2(positionUpdater);
-    MatrixXf line_segments = generate_lines();  // Generate environment lines
     
     time_t start = time(NULL); 
     while (1){
@@ -154,6 +150,9 @@ void kalman_test(short ml_speed_, short mr_speed_){
         }
 
     }
+
+    th1.join();
+    th2.join();
 }
 
 int main(int argc, char **argv){
@@ -180,53 +179,8 @@ int main(int argc, char **argv){
     cout << "Right speed: " << right_speed << endl;
 
     kalman_test(left_speed, right_speed);
-    return 0;
-
-    MatrixXf line_segments = generate_lines();
-    thread th1(listenLidar);
-    initLidar();
-    MatrixXf cart;
-
-    pose << 445, 280, 0;   // Initial pose (x, y, theta)
-
-    sleep(2);
-
-    time_t start = time(NULL); 
-    while (1){
-        time_t end = time(NULL);
-        double elapsed_seconds = difftime(end, start);
-
-        if (elapsed_seconds >= 100.0) {
-            lidarRunning = 0;
-            break;
-        }
-        
-        if(dataReady = 1){
-            printf("\ncox time\n");
-            printf("|---------------|\n");
-
-            cart = polar_to_cart(points);
-            cart = transform_points(cart, pose);    // Laser to world frame
-
-            MatrixXf cov = MatrixXf::Zero(3,3);
-            VectorXf transformation = cox_linefit(cart, line_segments, 100, &cov);
-            cout << transformation;
-
-            cart = transform_points(cart, transformation);  // Transform points to align with lines
-            pose(0) += transformation(0);
-            pose(1) += transformation(1);
-            pose(2) += transformation(2);
-
-            plot(cart);
-            printf("\n|---------------|");
-
-            dataReady=0;
-        }
-    }
 
     lidarRunning = 0;
-
-    th1.join();
 
     stopLidar();
 
