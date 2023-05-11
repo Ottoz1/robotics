@@ -14,10 +14,10 @@ MatrixXf points(200,2);
 int dataReady = 0;
 int lidarRunning = 1;
 
-VectorXf pose(3);
-
 using namespace std;
 using namespace Eigen;
+
+VectorXf pose(3);
 
 void vision_test()
 {
@@ -100,19 +100,81 @@ class InputParser{
 
 void motor_test(short ml_speed_, short mr_speed_){
     init_motors();
-    pose << 0, 0, 0;  // Initial pose (x, y, theta)
-    init_odometry(pose);
+    //pose << 0, 0, 0;  // Initial pose (x, y, theta)
+    //init_odometry(pose);
 	while(1){
 		delay(100);
 		call_motors(ml_speed_, mr_speed_);
         update_odometry_pose();
-        pose = get_odometry_pose();
-        printf("x=%f y=%f theta=%f\n",pose(0),pose(1),pose(2));
+        //pose = get_odometry_pose();
+        //printf("x=%f y=%f theta=%f\n",pose(0),pose(1),pose(2));
         MatrixXf cov = get_odometry_cov();
         printf("covariance: \n");
         cout << cov << endl;
         printf("__________________________\n");
 	}
+}
+
+void init_robot(){
+    VectorXf start_pose(3);
+    start_pose << 190, 1220, 0;  // Initial pose (x, y, theta)
+    init_motors();
+    init_odometry(start_pose);
+    initLidar();
+}
+
+void kalman_test(short ml_speed_, short mr_speed_){
+    init_robot();
+    thread th1(listenLidar);
+    MatrixXf line_segments = generate_lines();  // Generate environment lines
+
+    VectorXf poseC = VectorXf::Zero(3);
+    MatrixXf covC = MatrixXf::Zero(3,3);
+    VectorXf poseO = VectorXf::Zero(3);
+    MatrixXf covO = MatrixXf::Zero(3,3);
+
+    MatrixXf cart;
+    
+    time_t start = time(NULL); 
+    while (1){
+        time_t end = time(NULL);
+        double elapsed_seconds = difftime(end, start);
+
+        if (elapsed_seconds >= 100.0) {
+            lidarRunning = 0;
+            break;
+        }
+
+        call_motors(ml_speed_, mr_speed_);
+        update_odometry_pose();
+        poseO = get_odometry_pose();
+        covO = get_odometry_cov();
+
+        //Print this please
+        printf("Ox=%f Oy=%f Otheta=%f\n",poseO(0),poseO(1),poseO(2));
+        printf("Odometry covariance: \n");
+        cout << covO << endl;
+        printf("__________________________\n");
+        
+        if(dataReady = 1){
+            poseC = poseO;
+            cart = polar_to_cart(points);
+            cart = transform_points(cart, poseO);    // Laser to world frame
+
+            VectorXf transformation = cox_linefit(cart, line_segments, 100, &covC);
+
+            poseC(0) += transformation(0);
+            poseC(1) += transformation(1);
+            poseC(2) += transformation(2);
+
+            //Print this please
+            printf("Cx=%f Cy=%f Ctheta=%f\n",poseC(0),poseC(1),poseC(2));
+            printf("CovarianceC: \n");
+            cout << covC << endl;
+
+            dataReady=0;
+        }
+    }
 }
 
 int main(int argc, char **argv){
@@ -138,7 +200,7 @@ int main(int argc, char **argv){
     cout << "Left speed: " << left_speed << endl;
     cout << "Right speed: " << right_speed << endl;
 
-    motor_test(left_speed, right_speed);
+    kalman_test(left_speed, right_speed);
     return 0;
 
     MatrixXf line_segments = generate_lines();
