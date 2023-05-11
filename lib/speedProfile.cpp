@@ -1,5 +1,13 @@
 #include "speedProfile.hpp"
 
+/*
+ * HOW TO USE
+ * speedProfile sp(maxVelocity, timeSample , acceleration, startPos, endPos, direction);
+ * sp.run();
+ * vector<vector<float>> wheelVelocities = sp.getWheelVelocities();
+ * positions = sp.forwardKinematics(rightWheelVelocities, leftWheelVelocities, wheelRadius, startPos[0], startPos[1], direction);
+ */
+
 /**
 * @brief Construct a new speed Profile::speed Profile object
 * @param maxVelocity maximum velocity of the robot
