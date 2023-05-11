@@ -100,17 +100,17 @@ class InputParser{
 
 void motor_test(short ml_speed_, short mr_speed_){
     init_motors();
-    pose << 0, 0, PI/2;  // Initial pose (x, y, theta)
+    pose << 0, 0, 0;  // Initial pose (x, y, theta)
     init_odometry(pose);
 	while(1){
 		delay(100);
 		call_motors(ml_speed_, mr_speed_);
-        printf("S_Ml=%d S_Mr=%d Enc_Ml= %d Enc_Mr %d\n",get_l_motorSpeed(),get_r_motorSpeed(),get_l_encoder(),get_r_encoder());
-        float dD = get_delta_D();
-        printf("dD=%f dT=%f\n",dD,get_delta_theta());
         update_odometry_pose();
         pose = get_odometry_pose();
         printf("x=%f y=%f theta=%f\n",pose(0),pose(1),pose(2));
+        MatrixXf cov = get_odometry_cov();
+        printf("covariance: \n");
+        cout << cov << endl;
         printf("__________________________\n");
 	}
 }

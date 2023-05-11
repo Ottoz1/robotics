@@ -48,14 +48,11 @@ void call_motors(int l_speed, int r_speed){
     }
 
     // Calculate the change in distance and angle based on the new encoder values
-    float ddr = (float)(new_r_encoder - r_encoder);
-    float ddl = (float)(new_l_encoder - l_encoder);
+    float ddr = (float)(new_r_encoder - r_encoder) * MM_PER_COUNT;
+    float ddl = (float)(new_l_encoder - l_encoder) * MM_PER_COUNT;
 
     dD = (ddr + ddl) / 2.0 * -1;    // -1 since the encoder values are negative when the robot moves forward
     dT = -(ddr - ddl) / WHEEL_BASE;
-
-    // Convert to mm
-    dD = dD * (WHEEL_DIAMETER * M_PI) / Wheel_C;
 
     // Update the encoder values
     l_encoder = new_l_encoder;
