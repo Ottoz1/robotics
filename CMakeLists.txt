@@ -11,6 +11,9 @@ find_package(OpenCV REQUIRED)
 # Find Eigen package
 find_package(Eigen3 REQUIRED)
 
+# Find python packages
+find_package(PythonLibs REQUIRED)
+
 # Find Motors library
 find_library(ROBOTIC librobotic_gcc.so)
 find_library(WIRING libwiringPi.so)
@@ -28,7 +31,7 @@ file(GLOB_RECURSE LIB_SOURCES "lib/*.c" "lib/*.cpp")
 add_library(MyLib ${LIB_SOURCES})
 
 # Link MyLib with OpenCV and Eigen
-target_link_libraries(MyLib ${OpenCV_LIBS} Eigen3::Eigen)
+target_link_libraries(MyLib ${OpenCV_LIBS} Eigen3::Eigen ${PYTHON_LIBRARIES})
 
 # Link the executable target with the VisionLib library, OpenCV and Eigen
-target_link_libraries(lab3 MyLib ${OpenCV_LIBS} Eigen3::Eigen ${ROBOTIC} ${WIRING})
+target_link_libraries(lab3 MyLib ${OpenCV_LIBS} Eigen3::Eigen ${ROBOTIC} ${WIRING} ${PYTHON_LIBRARIES})
