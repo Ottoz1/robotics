@@ -11,6 +11,7 @@
 #include <Eigen/Dense>
 #include <unistd.h>
 #include <stdio.h>
+#include <chrono>
 
 using namespace std;
 using namespace Eigen;
@@ -160,20 +161,20 @@ void kalman_test(){
     thread th1(listenLidar);
     thread th2(positionUpdater);
     
-    clock_t start = clock();
+    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < wheelVelocities.size(); i++){
         // Calculate the elapsed time
-        clock_t currentTime = clock();
-        int elapsedTime = (currentTime - startTime) * 1000 / CLOCKS_PER_SEC;
+        chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
 
         // Check if 10ms have passed
-        if (elapsedTime < 10) {
+        if (elapsedTime.count() < 0.01){
             i--;
             continue;
         }
         
         // Update the start time for the next iteration
-        start = clock();
+        start = chrono::high_resolution_clock::now();
 
         call_motors(wheelVelocities[i][0] * 3000/max_v, wheelVelocities[i][1] * 3000/max_v);
         VectorXf pos_current = get_odometry_pose();
