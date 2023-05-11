@@ -26,7 +26,7 @@ MatrixXf cov = MatrixXf::Zero(3, 3);
 vector<vector<float>> positions_s;
 vector<vector<float>> wheelVelocities;
 Eigen::Vector2f start_pos(190, 1230);
-Eigen::Vector2f end_pos(1020, 1230);
+Eigen::Vector2f end_pos(790, 480);
 vector<float> r_wheel_vel;
 vector<float> l_wheel_vel;
 int dataReady = 0;
@@ -141,6 +141,7 @@ void init_robot(){
     for(int i = 0; i < wheelVelocities.size(); i++){
         r_wheel_vel.push_back(wheelVelocities[i][0]);
         l_wheel_vel.push_back(wheelVelocities[i][1]);
+        cout << "i: " << i << " r: " << r_wheel_vel[i] << " l: " << l_wheel_vel[i] << endl;
     }
 
     positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos(0), start_pos(1), dir);
@@ -176,10 +177,10 @@ void kalman_test(){
         // Update the start time for the next iteration
         start = chrono::high_resolution_clock::now();
 
-        call_motors(wheelVelocities[i][0] * 3000/max_v, wheelVelocities[i][1] * 3000/max_v);
+        call_motors(wheelVelocities[i][0] * 2100/max_v, wheelVelocities[i][1] * 2100/max_v);
         VectorXf pos_current = get_odometry_pose();
-        int ms = (std::clock() - start) / (double) (CLOCKS_PER_SEC / 1000);
-        //cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;        
+        //cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;   
+        //cout << "time_elapsed: " << elapsedTime.count()*1000 << endl;   
 
     }
 

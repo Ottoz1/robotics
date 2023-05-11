@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
+#include "units.hpp"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ class speedProfile{
         vector<vector<float>> forwardKinematics(vector<float> rightWheelVel, vector<float> leftWheelVel, float wheelRadius, float x, float y, float theta);
 
     private:
-        float wheelBase = 10.0;
+        float wheelBase = WHEEL_BASE;
         std::vector<float> velocities;
         float velocity;
         // wheelVelocities = {leftWheelVelocities, rightWheelVelocities}
