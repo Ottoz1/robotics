@@ -166,7 +166,7 @@ void kalman_test(){
         call_motors(wheelVelocities[i][0] * 3000/max_v, wheelVelocities[i][1] * 3000/max_v);
         VectorXf pos_current = get_odometry_pose();
         int ms = (std::clock() - start) / (double) (CLOCKS_PER_SEC / 1000);
-        cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;        
+        //cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;        
 
     }
 

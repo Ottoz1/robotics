@@ -28,6 +28,9 @@ speedProfile::speedProfile(float maxVelocity, float dt, float acceleration, Eige
     this->endPos = endPos;
     this->direction = direction;
     this->status = 0;
+
+    cout << "endPos: " << endPos << endl;
+    cout << "startPos: " << startPos << endl;
 }
 
 speedProfile::~speedProfile(){
