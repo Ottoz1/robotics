@@ -1,5 +1,6 @@
 #include "motors.hpp"
 #include "units.hpp"
+#include "odometry.hpp"
 
 MotorDataType MotorData;
 static const int SPI_Channel = 1;
@@ -59,6 +60,7 @@ void call_motors(int l_speed, int r_speed){
     r_encoder = new_r_encoder;
 
     encoders_ready = 1;
+    update_odometry_pose();
 }
 
 
