@@ -35,6 +35,9 @@ int positionUpdater(){
             set_odometry_pose(posK);
             set_odometry_cov(covK);
 
+            cart = transform_points(cart, transformation);    // Laser to world frame
+            plot(cart);
+
             dataReady=0;
         }
     }
