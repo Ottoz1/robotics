@@ -1,56 +1,34 @@
 #include "speedProfile.hpp"
 
-using namespace std;
-
- /*
- / Speed profile for a differential drive robot
+/**
+* @brief Construct a new speed Profile::speed Profile object
+* @param maxVelocity maximum velocity of the robot
+* @param dt time between each sample
+* @param acceleration acceleration of the robot
+* @param dt time between each sample
+* @param startPos starting position of the robot
+* @param endPos ending position of the robot
+* @param direction current direction of the robot
+*
+* @return speedProfile object
 */
-
-int speedProfile::setNewGoal(Eigen::Vector2f goal){
-    if (status != 1){
-        this->endPos = goal;
-        this->distance = sqrt(pow(endPos[0] - startPos[0], 2) + pow(endPos[1] - startPos[1], 2));
-        this->angle = atan2(endPos[1] - startPos[1], endPos[0] - startPos[0]);
-        return 0;
-    }
-    else{
-        return 1;
-    }
-}
-
-speedProfile::speedProfile(Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction){
-    //user specified variables
+speedProfile::speedProfile(float maxVelocity, float dt, float acceleration, Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction){
+    this->maxVelocity = maxVelocity;
+    this->dt = dt;
+    this->acceleration = acceleration;
     this->startPos = startPos;
     this->endPos = endPos;
     this->direction = direction;
-
-    //robot constants
-    this->sampleTime = 0.01;
-    this->maxVelocity = 10;   
-    this->motorValue = 1000; 
-    //wheel radius
-    this->radius = 1;
-    //distance between wheels
-    this->wheelBase = 2;
-
-    //program variables
-    this->velocity = 0;
-    this->acceleration = 10;
-    //distance between start and end position
-    this->distance = sqrt(pow(endPos[0] - startPos[0], 2) + pow(endPos[1] - startPos[1], 2));
-    this->angle = atan2(endPos[1] - startPos[1], endPos[0] - startPos[0]);
-    positions.clear();
-    speeds.clear();
+    this->status = 0;
 }
 
 speedProfile::~speedProfile(){
-    // destructor
+    //nothing to do here
 }
 
 void speedProfile::accelerate(){
-    acceleration = std::abs(acceleration);
-    velocity += acceleration * sampleTime;
-    
+    acceleration = abs(acceleration);
+    velocity += acceleration * dt;
     return;
 }
 void speedProfile::holdVelocity(){
@@ -58,151 +36,151 @@ void speedProfile::holdVelocity(){
     return;
 }
 void speedProfile::decelerate(){
-    acceleration = -std::abs(acceleration);
-    velocity += acceleration * sampleTime;
+    acceleration = -abs(acceleration);
+    velocity += acceleration * dt;
     return;
 }
 
-void speedProfile::run(){
-    //get speed profile for turning
-    //convert to wheel velocities
-    //append to wheelVelocities
-    //get speed profile for straight line
-    //convert to wheel velocities
-    //append to wheelVelocities
-
-    assert(positions.size() == 0);
-    assert(speeds.size() == 0);
-    assert(profiles.size() == 0);
-
-    std::vector<std::vector<float>> turningVelocities;
-    std::vector<std::vector<float>> straightVelocities;
-    std::vector<std::vector<float>> turningProfiles;
-    std::vector<std::vector<float>> straightProfiles;
-    getSpeedProfile(angle * (wheelBase / 2));
-
-    turningVelocities = calcWheelTurnVelocities();
-    turningProfiles = calcWheelTurnProfiles();
-
-    positions.clear();
-    speeds.clear();
-    profiles.clear();
-
-    assert(positions.size() == 0);
-    assert(speeds.size() == 0);
-
-    getSpeedProfile(distance);
-    straightVelocities = calcWheelVelocities();
-    straightProfiles = calcWheelProfiles();
-
-    for (int i = 0; i < turningVelocities.size(); i++){
-        wheelVelocities.push_back(turningVelocities[i]);
-    }
-    for (int i = 0; i < straightVelocities.size(); i++){
-        wheelVelocities.push_back(straightVelocities[i]);
-    }
+//returns the angle theta between the current direction and the direction to the end positions
+float speedProfile::getTheta(){
+    float theta = atan2(endPos[1] - startPos[1], endPos[0] - startPos[0]) - direction;
+    return theta;
 }
 
-void speedProfile::getSpeedProfile(float dist){
+//returns the distance between startPos and endPos
+float speedProfile::getDistance(){
+    Eigen::Vector2f directionVector = endPos - startPos;
+    return directionVector.norm();
+}
+
+vector<float> speedProfile::getSpeedProfile(float dist){
+    dist = abs(dist);
+    velocity = 0;
     float position = 0;
     double breakDistance = 0;
     status = 1;
-    while ((position + breakDistance)<= dist){
-        if(velocity < maxVelocity){
+    while ((position + breakDistance) <= dist){
+       if(velocity < maxVelocity){
             accelerate();
         } 
         else {
             holdVelocity();
         }
-        position += velocity * sampleTime;
+        position += velocity * dt;
         breakDistance = pow(velocity, 2) / (2 * abs(acceleration));
-
-        speeds.push_back(velocity);
-        profiles.push_back(motorValue);
+        velocities.push_back(velocity);
+        //used for plotting 
         positions.push_back(position);
-    }
+        }
     while (position <= dist && velocity > 0){
         decelerate();
-        position += velocity * sampleTime;
-        speeds.push_back(velocity);
-        profiles.push_back(0);
+        position += velocity * dt;
+        velocities.push_back(velocity);
+        //used for plotting
         positions.push_back(position);
     }
+
+
     status = 2;
-    return;
-}
-int speedProfile::getStatus(){
-    return this->status;
-}
-int speedProfile::getAngle(){
-    return this->angle;
-}
-int speedProfile::getSampleTime(){
-    return this->sampleTime;
+    return velocities;
 }
 
-std::vector<float> speedProfile::getSpeeds(){
-    return speeds;
+void speedProfile::run(){
+    if(status == 0){
+        turn();
+        velocities.clear();
+        positions.clear();
+        walk();
+    }
+    else if(status == 1){
+        cout << "speedProfile running" << endl;
+        return;
+    }
+    else{
+        cout << "speedProfile finished" << endl;
+        return;
+    }
 }
 
-std::vector<float> speedProfile::getPositions(){
-    return positions;
+//return the wheel velocities for both wheel when going forward the distance between startPos and endPos
+vector<vector<float>> speedProfile::walk(){
+    vector<float> wheelSpeeds = getSpeedProfile(getDistance());
+    for (int i = 0; i < wheelSpeeds.size(); i++){
+        wheelVelocities.push_back({wheelSpeeds[i], wheelSpeeds[i]});
+    }
+    return wheelVelocities;
 }
 
-std::vector<std::vector<float>> speedProfile::getWheelVelocities(){
+//return the wheel velocities for both wheel when turning by theta
+vector<vector<float>> speedProfile::turn(){
+    float theta = getTheta();
+    theta = theta * (wheelBase / 2);
+    vector<float> wheelSpeeds = getSpeedProfile(theta);
+    if(theta < 0){
+        for (int i = 0; i < wheelSpeeds.size(); i++){
+            cout << "wheelSpeeds: " << wheelSpeeds[i] << endl;
+            wheelVelocities.push_back({wheelSpeeds[i], -wheelSpeeds[i]});
+        }
+    }
+    else{
+        for (int i = 0; i < wheelSpeeds.size(); i++){
+            wheelVelocities.push_back({-wheelSpeeds[i], wheelSpeeds[i]});
+        }
+    }
+    return wheelVelocities;
+}
+
+vector<vector<float>> speedProfile::getWheelVelocities(){
     return this->wheelVelocities;
 }
 
-
-std::vector<std::vector<float>> speedProfile::calcWheelVelocities(){
-    // wheelVelocities = [leftWheel, rightWheel]
-    std::vector<std::vector<float>> wheelVel;
-    for (int i = 0; i < speeds.size(); i++){
-        wheelVel.push_back({speeds[i] / radius, speeds[i] / radius});
-    }
-    return wheelVel;
+vector<float> speedProfile::getPositions(){
+    return this->positions;
 }
 
-std::vector<std::vector<float>> speedProfile::calcWheelTurnVelocities(){
-    // wheelVelocities = [leftWheel, rightWheel]
-    std::vector<std::vector<float>> wheelVel;
-    //if the angle in radians is negative, turn left
-    if(angle > 0){
-        for (int i = 0; i < speeds.size(); i++){
-            wheelVel.push_back({speeds[i] / radius, -speeds[i] / radius});
-        }
-    }
-    else{
-        for (int i = 0; i < speeds.size(); i++){
-            wheelVel.push_back({-speeds[i] / radius, speeds[i] / radius});
-        }
-    }
-    return wheelVel;
+vector<float> speedProfile::getVelocities(){
+    return this->velocities;
 }
 
-std::vector<std::vector<float>> speedProfile::calcWheelProfiles(){
-    // wheelVelocities = [leftWheel, rightWheel]
-    std::vector<std::vector<float>> wheelProf;
-    for (int i = 0; i < profiles.size(); i++){
-        wheelProf.push_back({profiles[i], profiles[i]});
-    }
-    return wheelProf;
-}
+vector<vector<float>> speedProfile::forwardKinematics(vector<float> rightWheelVel, vector<float> leftWheelVel, float wheelRadius, float x, float y, float theta){
+    float dt = 0.01;
+    //positions = {x, y, theta}
+    vector<vector<float>> positions;
 
-std::vector<std::vector<float>> speedProfile::calcWheelTurnProfiles(){
-    // wheelVelocities = [leftWheel, rightWheel]
-    std::vector<std::vector<float>> wheelProf;
-    if(angle > 0){
-        for (int i = 0; i < speeds.size(); i++){
-            wheelProf.push_back({profiles[i], -profiles[i]});
-        }
-    }
-    else{
-        for (int i = 0; i < speeds.size(); i++){
-            wheelProf.push_back({-profiles[i], profiles[i]});
-        }
-    }
-    return wheelProf;
-}
+    //initial position
+    positions.push_back({x, y, theta});
 
+    cout << "rightWheelVel.size(): " << rightWheelVel.size() << endl;
+
+    for (int i = 0; i < rightWheelVel.size(); i++){
+        float x = positions[i][0];
+        float y = positions[i][1];
+        float theta = positions[i][2];
+        float rightWheel = rightWheelVel[i];
+        float leftWheel = leftWheelVel[i];
+
+        float v = (rightWheel + leftWheel) * (wheelRadius / 2);
+        float w = (rightWheel - leftWheel) * (wheelRadius / wheelBase);
+
+        float xNew = 0;
+        float yNew = 0;
+        float thetaNew = 0;
+
+        if(abs(sin(theta)) < 0.0001){
+            xNew = x + v * 1 * dt;
+            yNew = y + v * 0 * dt;
+            thetaNew = theta + w * dt;
+        }
+        else{
+            xNew = x + v * cos(theta) * dt;
+            yNew = y + v * sin(theta) * dt;
+            thetaNew = theta + w * dt;
+        }
+
+        positions.push_back({xNew, yNew, thetaNew});
+        //cout << "x: " << xNew << " y: " << yNew << " theta: " << thetaNew << endl;
+    }
+
+    return positions;
+}
 

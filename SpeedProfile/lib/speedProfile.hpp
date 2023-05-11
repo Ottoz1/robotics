@@ -6,53 +6,18 @@
 #include <iostream>
 #include <cassert>
 
+using namespace std;
+
 class speedProfile{
-    //program variables
-    float velocity;
-    float acceleration;
-    float distance;
-    float angle;
-
-    //user specified variables
-    Eigen::Vector2f startPos; // start position
-    Eigen::Vector2f endPos; // goal position
-    float direction; // current direction of robot
-
-    //robot constants
-    float sampleTime;
-    float maxVelocity;
-    float radius;
-    float wheelBase;
-    float motorValue;
-
-    //mainly for plotting
-    std::vector<float> speeds;
-    std::vector<float> positions;
-    // wheel velocities = {left, right}
-    std::vector<std::vector<float>> wheelVelocities;
-
-    //outputs
-    //eeeeh temp ugly global kill me
-    std::vector<float> profiles;
-
-    std::vector<std::vector<float>> wheelProfiles;
-
-    /*
-        0 = not started
-        1 = running
-        2 = finished
-    */
-    int status = 0;
-
     public:
-        int setNewGoal(Eigen::Vector2f goal);
+        float maxVelocity;
+        float dt;
+        float acceleration;
+        Eigen::Vector2f startPos;
+        Eigen::Vector2f endPos;
+        float direction; // current direction of the robot
 
-        /*
-            goal: goal position
-            sampleTime: time between each sample
-            maxVelocity: maximum velocity
-        */
-        speedProfile(Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction);
+        speedProfile(float maxVelocity, float dt, float acceleration, Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction);
 
         ~speedProfile();
 
@@ -60,19 +25,28 @@ class speedProfile{
         void holdVelocity();
         void decelerate();
 
+        float getTheta(); // returns the angle theta between the current direction and the direction to the end position
+        float getDistance(); // returns the distance between startPos and endPos
+        vector<float> getSpeedProfile(float dist);
+
+        //will return velocities of both wheels that will move the robot by the size of the vector between startPos and endPos
+        vector<vector<float>> walk();
+        //will return velocities of both wheels that will turn the robot by theta
+        vector<vector<float>> turn(); 
         void run();
 
-        int getStatus();
-        int getAngle();
-        int getSampleTime();
-        std::vector<float> getSpeeds();
-        std::vector<float> getPositions();
-        std::vector<std::vector<float>> getWheelVelocities();
+        vector<vector<float>> getWheelVelocities();
+        vector<float> getPositions();
+        vector<float> getVelocities();
+        vector<vector<float>> forwardKinematics(vector<float> rightWheelVel, vector<float> leftWheelVel, float wheelRadius, float x, float y, float theta);
 
-        void getSpeedProfile(float dist);
+    private:
+        float wheelBase = 10.0;
+        std::vector<float> velocities;
+        float velocity;
+        // wheelVelocities = {leftWheelVelocities, rightWheelVelocities}
+        std::vector<vector<float>> wheelVelocities;
+        std::vector<float> positions;
+        int status; // 0 = not initialized, 1 = running, 2 = finished
 
-        std::vector<std::vector<float>> calcWheelVelocities();
-        std::vector<std::vector<float>> calcWheelTurnVelocities();
-        std::vector<std::vector<float>> calcWheelProfiles();
-        std::vector<std::vector<float>> calcWheelTurnProfiles();
 };

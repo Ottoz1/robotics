@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.1)
 project(MyProject)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+SET(CMAKE_BUILD_TYPE Debug)
 
 # Find OpenCV package
 find_package(OpenCV REQUIRED)
