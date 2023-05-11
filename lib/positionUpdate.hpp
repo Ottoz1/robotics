@@ -1,6 +1,7 @@
 #include "ravLidar.hpp"
 #include "cox.hpp"
 #include "odometry.hpp"
+#include "kalman.hpp"
 #include <Eigen/Dense>
 
 using namespace std;

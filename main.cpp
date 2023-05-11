@@ -115,13 +115,13 @@ void motor_test(short ml_speed_, short mr_speed_){
         MatrixXf cov = get_odometry_cov();
         printf("covariance: \n");
         cout << cov << endl;
-        printf("__________________________\n");
+        printf("________________________________\n");
 	}
 }
 
 void init_robot(){
     VectorXf start_pose(3);
-    start_pose << 190, 1220, 0;  // Initial pose (x, y, theta)
+    start_pose << 190, 1230, 0;  // Initial pose (x, y, theta)
     init_motors();
     init_odometry(start_pose);
     initLidar();
@@ -143,6 +143,14 @@ void kalman_test(short ml_speed_, short mr_speed_){
         }
 
         call_motors(ml_speed_, mr_speed_);
+        VectorXf pos_current = get_odometry_pose();
+        MatrixXf cov_current = get_odometry_cov();
+
+        //clear terminal
+        cout << "pose: " << endl << pos_current << endl;
+        cout << "cov: " << endl << cov_current << endl;
+        cout << "_________________________________" << endl;
+
 
         if(new_pos_ready){
 

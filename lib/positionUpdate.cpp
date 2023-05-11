@@ -29,10 +29,11 @@ int positionUpdater(){
             posC(1) += transformation(1);
             posC(2) += transformation(2);
 
-            //Print this please
-            printf("Cx=%f Cy=%f Ctheta=%f\n",posC(0),posC(1),posC(2));
-            printf("CovarianceC: \n");
-            cout << covC << endl;
+            posK = kalman_combine_pose(posC, posO, covC, covO);
+            covK = kalman_combine_cov(covC, covO);
+
+            set_odometry_pose(posK);
+            set_odometry_cov(covK);
 
             dataReady=0;
         }

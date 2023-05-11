@@ -67,6 +67,6 @@ void set_odometry_pose(VectorXf new_pose){
     pose_odometry = new_pose;
 }
 
-void set_odometry_covariance(MatrixXf new_cov){
+void set_odometry_cov(MatrixXf new_cov){
     cov_odometry = new_cov;
 }
