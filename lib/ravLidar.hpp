@@ -6,7 +6,6 @@ using namespace std;
 #define TCP_PORT 9887
 #define BUFFER_SIZE 1024
 #define MAX_CLIENTS 10
-const double PI = 3.14159265358979323846;
 
 extern MatrixXf points;
 extern int dataReady;
