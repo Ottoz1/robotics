@@ -160,14 +160,24 @@ void kalman_test(){
     thread th1(listenLidar);
     thread th2(positionUpdater);
     
+    clock_t start = clock();
     for (int i = 0; i < wheelVelocities.size(); i++){
-        clock_t start = std::clock();
+        // Calculate the elapsed time
+        clock_t currentTime = clock();
+        int elapsedTime = (currentTime - startTime) * 1000 / CLOCKS_PER_SEC;
+
+        // Check if 10ms have passed
+        if (elapsedTime < 10) {
+            i--;
+            continue;
+        }
+        
+        // Update the start time for the next iteration
+        start = clock();
 
         call_motors(wheelVelocities[i][0] * 3000/max_v, wheelVelocities[i][1] * 3000/max_v);
         VectorXf pos_current = get_odometry_pose();
-        int ms = (std::clock() - start) / (double) (CLOCKS_PER_SEC / 1000);
-        cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;        
-
+        cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;
     }
 
     th1.join();
