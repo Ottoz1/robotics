@@ -19,7 +19,7 @@ const float COUNT_PER_REV = Motor_C2 * Gearbox2; // Motor count per revolution a
 const float WHEEL_BASE = 99.33;  // Distance between wheels (in mm)
 const float WHEEL_DIAMETER = 33.17;  // Diameter of the wheels (in mm)
 const float WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * M_PI;  // Circumference of the wheels (in mm)
-
+const float WHEEL_RADIUS = WHEEL_DIAMETER / 2;  // Radius of the wheels (in mm)
 // Count to real world units
 const float MM_PER_COUNT = WHEEL_CIRCUMFERENCE / COUNT_PER_REV;  // Distance traveled per encoder count (in mm)
 

@@ -4,6 +4,7 @@
 #include "lib/ravLidar.hpp"
 #include "lib/odometry.hpp"
 #include "lib/positionUpdate.hpp"
+#include "lib/speedProfile.hpp"
 #include <time.h>
 #include <iostream>
 #include <thread>
@@ -21,7 +22,15 @@ int lidarRunning = 1;
 MatrixXf points = MatrixXf::Zero(200,2);
 VectorXf pos = VectorXf::Zero(3);
 MatrixXf cov = MatrixXf::Zero(3, 3);
+vector<vector<float>> positions_s;
+vector<vector<float>> wheelVelocities;
+Eigen::Vector2f start_pos(190, 1230);
+Eigen::Vector2f end_pos(1020, 1230);
+vector<float> r_wheel_vel;
+vector<float> l_wheel_vel;
 int dataReady = 0;
+
+float max_v;
 
 void vision_test()
 {
@@ -120,6 +129,20 @@ void motor_test(short ml_speed_, short mr_speed_){
 }
 
 void init_robot(){
+    float max_vel = max_v; // mm/10ms
+    float dt = 0.01; // 10ms
+    float acceleration = 10 * max_vel; // mm/10ms^2
+    float dir = 0;
+    speedProfile sp(max_vel, dt, acceleration, start_pos, end_pos, dir);
+    sp.run();
+    wheelVelocities = sp.getWheelVelocities();
+    
+    for(int i = 0; i < wheelVelocities.size(); i++){
+        r_wheel_vel.push_back(wheelVelocities[i][0]);
+        l_wheel_vel.push_back(wheelVelocities[i][1]);
+    }
+
+    positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos(0), start_pos(1), dir);
     VectorXf start_pose(3);
     start_pose << 190, 1230, 0;  // Initial pose (x, y, theta)
     init_motors();
@@ -127,35 +150,23 @@ void init_robot(){
     initLidar();
 }
 
-void kalman_test(short ml_speed_, short mr_speed_){
+float errorTheta(VectorXf actual, vector<float> expected){
+    float error = actual(2) - expected[2];
+    return error;
+}
+
+void kalman_test(){
     init_robot();
     thread th1(listenLidar);
     thread th2(positionUpdater);
     
-    time_t start = time(NULL); 
-    while (1){
-        time_t end = time(NULL);
-        double elapsed_seconds = difftime(end, start);
+    for (int i = 0; i < wheelVelocities.size(); i++){
+        clock_t start = std::clock();
 
-        if (elapsed_seconds >= 100.0) {
-            lidarRunning = 0;
-            break;
-        }
-
-        call_motors(ml_speed_, mr_speed_);
+        call_motors(wheelVelocities[i][0] * 3000/max_v, wheelVelocities[i][1] * 3000/max_v);
         VectorXf pos_current = get_odometry_pose();
-        MatrixXf cov_current = get_odometry_cov();
-
-        //clear terminal
-        cout << "pose: " << endl << pos_current << endl;
-        cout << "cov: " << endl << cov_current << endl;
-        cout << "_________________________________" << endl;
-
-
-        if(new_pos_ready){
-
-            new_pos_ready = 0;
-        }
+        int ms = (std::clock() - start) / (double) (CLOCKS_PER_SEC / 1000);
+        cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;        
 
     }
 
@@ -169,11 +180,11 @@ int main(int argc, char **argv){
 
     // Get input arguments and set motor speeds accordingly
     InputParser input(argc, argv);
-    if(input.cmdOptionExists("-l")){
-        right_speed = stoi(input.getCmdOption("-l"));
+    if(input.cmdOptionExists("-v")){
+        max_v = stoi(input.getCmdOption("-v"));
     }
     else{
-        right_speed = 0;
+        max_v = 0;
     }
 
     if(input.cmdOptionExists("-r")){
@@ -186,7 +197,7 @@ int main(int argc, char **argv){
     cout << "Left speed: " << left_speed << endl;
     cout << "Right speed: " << right_speed << endl;
 
-    kalman_test(left_speed, right_speed);
+    kalman_test();
 
     lidarRunning = 0;
 
