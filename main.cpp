@@ -25,11 +25,17 @@ VectorXf pos = VectorXf::Zero(3);
 MatrixXf cov = MatrixXf::Zero(3, 3);
 vector<vector<float>> positions_s;
 vector<vector<float>> wheelVelocities;
-Eigen::Vector2f start_pos(190, 1230);
-Eigen::Vector2f end_pos(790, 480);
+vector<float> start_pos = {190, 1230, 0};
+vector<float> end_pos = {790, 480, M_PI/4};
 vector<float> r_wheel_vel;
 vector<float> l_wheel_vel;
 int dataReady = 0;
+
+int x;
+int y;
+int xs;
+int ys;
+int theta;
 
 float max_v;
 
@@ -130,10 +136,13 @@ void motor_test(short ml_speed_, short mr_speed_){
 }
 
 void init_robot(){
+
     float max_vel = max_v; // mm/10ms
     float dt = 0.01; // 10ms
     float acceleration = 10 * max_vel; // mm/10ms^2
     float dir = 0;
+    end_pos[0] = x;
+    end_pos[1] = y;
     speedProfile sp(max_vel, dt, acceleration, start_pos, end_pos, dir);
     sp.run();
     wheelVelocities = sp.getWheelVelocities();
@@ -144,7 +153,7 @@ void init_robot(){
         cout << "i: " << i << " r: " << r_wheel_vel[i] << " l: " << l_wheel_vel[i] << endl;
     }
 
-    positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos(0), start_pos(1), dir);
+    positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos[0], start_pos[1], dir);
     VectorXf start_pose(3);
     start_pose << 190, 1230, 0;  // Initial pose (x, y, theta)
     init_motors();
@@ -177,7 +186,7 @@ void kalman_test(){
         // Update the start time for the next iteration
         start = chrono::high_resolution_clock::now();
 
-        call_motors(wheelVelocities[i][0] * 2100/max_v, wheelVelocities[i][1] * 2100/max_v);
+        call_motors(wheelVelocities[i][0] * 900/max_v, wheelVelocities[i][1] * 900/max_v);
         VectorXf pos_current = get_odometry_pose();
         //cout << "iter: " << i << " of: " << wheelVelocities.size() << endl;   
         //cout << "time_elapsed: " << elapsedTime.count()*1000 << endl;   
@@ -195,17 +204,24 @@ int main(int argc, char **argv){
     // Get input arguments and set motor speeds accordingly
     InputParser input(argc, argv);
     if(input.cmdOptionExists("-v")){
-        max_v = stoi(input.getCmdOption("-v"));
+        max_v = 14.7;
     }
     else{
-        max_v = 0;
+        max_v = 14.7;
     }
 
-    if(input.cmdOptionExists("-r")){
-        left_speed = stoi(input.getCmdOption("-r"));
+    if(input.cmdOptionExists("-x")){
+        x = stoi(input.getCmdOption("-x"));
     }
     else{
-        left_speed = 0;
+        y = 0;
+    }
+
+    if(input.cmdOptionExists("-y")){
+        y = stoi(input.getCmdOption("-y"));
+    }
+    else{
+        y = 0;
     }
 
     cout << "Left speed: " << left_speed << endl;

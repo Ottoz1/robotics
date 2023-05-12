@@ -14,11 +14,11 @@ class speedProfile{
         float maxVelocity;
         float dt;
         float acceleration;
-        Eigen::Vector2f startPos;
-        Eigen::Vector2f endPos;
+        vector<float> startPos;
+        vector<float> endPos;
         float direction; // current direction of the robot
 
-        speedProfile(float maxVelocity, float dt, float acceleration, Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction);
+        speedProfile(float maxVelocity, float dt, float acceleration, vector<float> startPos, vector<float> endPos, float direction);
 
         ~speedProfile();
 
@@ -33,7 +33,7 @@ class speedProfile{
         //will return velocities of both wheels that will move the robot by the size of the vector between startPos and endPos
         vector<vector<float>> walk();
         //will return velocities of both wheels that will turn the robot by theta
-        vector<vector<float>> turn(); 
+        vector<vector<float>> turn(float theta); 
         void run();
 
         vector<vector<float>> getWheelVelocities();

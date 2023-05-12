@@ -20,7 +20,7 @@
 *
 * @return speedProfile object
 */
-speedProfile::speedProfile(float maxVelocity, float dt, float acceleration, Eigen::Vector2f startPos, Eigen::Vector2f endPos, float direction){
+speedProfile::speedProfile(float maxVelocity, float dt, float acceleration, vector<float> startPos, vector<float> endPos, float direction){
     this->maxVelocity = maxVelocity;
     this->dt = dt;
     this->acceleration = acceleration;
@@ -29,8 +29,7 @@ speedProfile::speedProfile(float maxVelocity, float dt, float acceleration, Eige
     this->direction = direction;
     this->status = 0;
 
-    cout << "endPos: " << endPos << endl;
-    cout << "startPos: " << startPos << endl;
+    
 }
 
 speedProfile::~speedProfile(){
@@ -54,14 +53,14 @@ void speedProfile::decelerate(){
 
 //returns the angle theta between the current direction and the direction to the end positions
 float speedProfile::getTheta(){
-    float theta = atan2(endPos[1] - startPos[1], endPos[0] - startPos[0]) - direction;
+    float theta = atan2(endPos[1] - startPos[1], endPos[0] - startPos[0]) - startPos[2];
     return theta;
 }
 
 //returns the distance between startPos and endPos
 float speedProfile::getDistance(){
-    Eigen::Vector2f directionVector = endPos - startPos;
-    return directionVector.norm();
+    vector<float> diff = {endPos[0] - startPos[0], endPos[1] - startPos[1]};
+    float dist = sqrt(pow(diff[0], 2) + pow(diff[1], 2));
 }
 
 vector<float> speedProfile::getSpeedProfile(float dist){
@@ -98,10 +97,19 @@ vector<float> speedProfile::getSpeedProfile(float dist){
 
 void speedProfile::run(){
     if(status == 0){
-        turn();
+        float theta = getTheta();
+        theta = theta * (wheelBase / 2);
+        cout << "theta: " << theta << endl;
+        turn(theta);
+
         velocities.clear();
         positions.clear();
         walk();
+        velocities.clear();
+        positions.clear();
+        theta = (endPos[2]*wheelBase/2) - theta;
+        cout << "theta: " << theta << endl;
+        turn(theta);
     }
     else if(status == 1){
         cout << "speedProfile running" << endl;
@@ -123,13 +131,11 @@ vector<vector<float>> speedProfile::walk(){
 }
 
 //return the wheel velocities for both wheel when turning by theta
-vector<vector<float>> speedProfile::turn(){
-    float theta = getTheta();
-    theta = theta * (wheelBase / 2);
+vector<vector<float>> speedProfile::turn(float theta){
     vector<float> wheelSpeeds = getSpeedProfile(theta);
     if(theta < 0){
         for (int i = 0; i < wheelSpeeds.size(); i++){
-            cout << "wheelSpeeds: " << wheelSpeeds[i] << endl;
+            //cout << "wheelSpeeds: " << wheelSpeeds[i] << endl;
             wheelVelocities.push_back({wheelSpeeds[i], -wheelSpeeds[i]});
         }
     }
