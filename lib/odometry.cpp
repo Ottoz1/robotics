@@ -1,4 +1,5 @@
 #include "odometry.hpp"
+#incldue "writeToFile.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -52,6 +53,9 @@ void update_odometry_pose(){
     MatrixXf old_cov = cov_odometry;
 
     cov_odometry = Aj * old_cov * Aj.transpose() + Bj * C * Bj.transpose();
+
+    //Save timestamp
+    append_odometry(pose_odometry, cov_odometry);
 }
 
 //GET AND SET FUNCTIONS
