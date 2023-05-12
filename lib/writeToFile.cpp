@@ -1,40 +1,58 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-using namespace std;
+#include "writeToFile.hpp"
 
-int main() {
-   // Sample data for odometry, scan-match, and Kalman calculations
-   vector<double> odom_data {1.0, 2.0, 0.0, 0.0};
-   vector<double> scanmatch_data {3.0, 4.0, 0.5};
-   vector<double> kalman_data {5.0, 6.0, 0.8};
+void append_odometry(VectorXf pos, MatrixXf cov) {
+    ofstream log("odometry.txt", ios_base::app | ios_base::out);
+    VectorXf flattened_cov = Map<VectorXf>(cov.data(), cov.cols() * cov.rows());
+    VectorXf row(1 + pos.size() + flattened_cov.size());
 
-   // Open files for writing
-   ofstream odom_file("odom.txt");
-   ofstream scanmatch_file("scanmatch.txt");
-   ofstream kalman_file("kalman.txt");
+    row(0) = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    row.segment(1, pos.size()) = pos;
 
-   // Write values to the files
-   for (int i = 0; i < odom_data.size(); i++) {
-       odom_file << odom_data[i] << " ";
-   }
-   odom_file << endl;
+    // Add covariance elements to the row
+    for (int i = 0; i < cov.rows(); i++) {
+        for (int j = 0; j < cov.cols(); j++) {
+            row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
+        }
+    }
 
-   for (int i = 0; i < scanmatch_data.size(); i++) {
-       scanmatch_file << scanmatch_data[i] << " ";
-   }
-   scanmatch_file << endl;
+    // Write row to file
+    log << row.transpose() << endl;
+}
 
-   for (int i = 0; i < kalman_data.size(); i++) {
-       kalman_file << kalman_data[i] << " ";
-   }
-   kalman_file << endl;
+void append_cox(VectorXf pos, MatrixXf cov) {
+    ofstream log("cox.txt", ios_base::app | ios_base::out);
+    VectorXf flattened_cov = Map<VectorXf>(cov.data(), cov.cols() * cov.rows());
+    VectorXf row(1 + pos.size() + flattened_cov.size());
 
-   // Close the files
-   odom_file.close();
-   scanmatch_file.close();
-   kalman_file.close();
+    row(0) = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    row.segment(1, pos.size()) = pos;
 
-   cout << "Files written successfully." << endl;
-   return 0;
+    // Add covariance elements to the row
+    for (int i = 0; i < cov.rows(); i++) {
+        for (int j = 0; j < cov.cols(); j++) {
+            row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
+        }
+    }
+
+    // Write row to file
+    log << row.transpose() << endl;
+}
+
+void append_kalman(VectorXf pos, MatrixXf cov) {
+    ofstream log("kalman.txt", ios_base::app | ios_base::out);
+    VectorXf flattened_cov = Map<VectorXf>(cov.data(), cov.cols() * cov.rows());
+    VectorXf row(1 + pos.size() + flattened_cov.size());
+
+    row(0) = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    row.segment(1, pos.size()) = pos;
+
+    // Add covariance elements to the row
+    for (int i = 0; i < cov.rows(); i++) {
+        for (int j = 0; j < cov.cols(); j++) {
+            row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
+        }
+    }
+
+    // Write row to file
+    log << row.transpose() << endl;
 }

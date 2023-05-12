@@ -1,4 +1,5 @@
 #include "positionUpdate.hpp"
+#include "writeToFile.hpp"
 using namespace std;
 using namespace Eigen;
 
@@ -39,6 +40,9 @@ int positionUpdater(){
             plot(cart);
 
             dataReady=0;
+
+            append_cox(posC, covC);
+            append_kalman(posK, covK);
         }
     }
 }
