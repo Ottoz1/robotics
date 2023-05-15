@@ -5,7 +5,8 @@ void append_odometry(VectorXf pos, MatrixXf cov) {
     VectorXf flattened_cov = Map<VectorXf>(cov.data(), cov.cols() * cov.rows());
     VectorXf row(1 + pos.size() + flattened_cov.size());
 
-    row(0) = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    time_t now = time(0) - 1683888246;
+    row(0) = static_cast<float>(now);
     row.segment(1, pos.size()) = pos;
 
     // Add covariance elements to the row
@@ -14,6 +15,8 @@ void append_odometry(VectorXf pos, MatrixXf cov) {
             row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
         }
     }
+
+    //cout << "Odom time: " << now << endl;
 
     // Write row to file
     log << row.transpose() << endl;
@@ -24,7 +27,8 @@ void append_cox(VectorXf pos, MatrixXf cov) {
     VectorXf flattened_cov = Map<VectorXf>(cov.data(), cov.cols() * cov.rows());
     VectorXf row(1 + pos.size() + flattened_cov.size());
 
-    row(0) = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    time_t now = time(0) - 1683888246;
+    row(0) = static_cast<float>(now);
     row.segment(1, pos.size()) = pos;
 
     // Add covariance elements to the row
@@ -33,6 +37,8 @@ void append_cox(VectorXf pos, MatrixXf cov) {
             row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
         }
     }
+
+    cout << "Cox time: " << now << endl;
 
     // Write row to file
     log << row.transpose() << endl;
@@ -43,7 +49,8 @@ void append_kalman(VectorXf pos, MatrixXf cov) {
     VectorXf flattened_cov = Map<VectorXf>(cov.data(), cov.cols() * cov.rows());
     VectorXf row(1 + pos.size() + flattened_cov.size());
 
-    row(0) = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+    time_t now = time(0) - 1683888246;
+    row(0) = static_cast<float>(now);
     row.segment(1, pos.size()) = pos;
 
     // Add covariance elements to the row
@@ -52,6 +59,8 @@ void append_kalman(VectorXf pos, MatrixXf cov) {
             row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
         }
     }
+
+    cout << "Kalm time: " << now << endl;
 
     // Write row to file
     log << row.transpose() << endl;

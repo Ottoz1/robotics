@@ -1,5 +1,5 @@
 #include "odometry.hpp"
-#incldue "writeToFile.hpp"
+#include "writeToFile.hpp"
 
 using namespace std;
 using namespace Eigen;
