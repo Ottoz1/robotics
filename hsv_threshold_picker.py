@@ -4,10 +4,6 @@ import numpy as np
 def nothing(x):
     pass
 
-# Load image
-image = cv2.imread('img/7.jpg')
-image = cv2.resize(image, (1280, 720))
-
 # Create a window
 cv2.namedWindow('image')
 
@@ -25,11 +21,24 @@ cv2.setTrackbarPos('HMax', 'image', 179)
 cv2.setTrackbarPos('SMax', 'image', 255)
 cv2.setTrackbarPos('VMax', 'image', 255)
 
+
 # Initialize HSV min/max values
 hMin = sMin = vMin = hMax = sMax = vMax = 0
 phMin = psMin = pvMin = phMax = psMax = pvMax = 0
 
+# create video capture
+cap = cv2.VideoCapture(0)
+
 while(1):
+    image = cap.read()[1]
+    image = cv2.resize(image, (640, 480))
+    image = cv2.flip(image, -1)
+
+    # dilate and erode to remove noise
+    kernel = np.ones((5, 5), np.uint8)
+    image = cv2.erode(image, kernel, iterations=1)
+    image = cv2.dilate(image, kernel, iterations=1)
+
     # Get current positions of all trackbars
     hMin = cv2.getTrackbarPos('HMin', 'image')
     sMin = cv2.getTrackbarPos('SMin', 'image')

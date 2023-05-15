@@ -15,6 +15,7 @@
 
 using namespace std;
 using namespace Eigen;
+using namespace cv;
 
 VectorXf pose(3);
 
@@ -65,34 +66,6 @@ void vision_test()
     visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
 }
 
-void cox_test()
-{
-    MatrixXf points = generate_data();  // Generate some random points
-    MatrixXf line_segments = generate_lines();  // Generate lines
-
-    // Multiply the points by 100 to make them more realistic
-    points *= 2;
-
-    // Define data types for start, stop, and duration variables
-    clock_t start;
-    clock_t end;
-    double duration;
-
-    MatrixXf cov = MatrixXf::Zero(3,3);
-    start = clock();
-    VectorXf transformation = cox_linefit(points, line_segments, 100, &cov);
-    end = clock();
-
-    points = transform_points(points, transformation);
-
-    cout << "Transformation: \n" << transformation << endl;
-    cout << "Covariance: \n" << cov << endl;
-
-    duration = ((double)(end - start))/CLOCKS_PER_SEC;
-    duration *= 1000;
-    std::cout << "Execution time: " << duration << " microseconds." << std::endl;
-}
-
 class InputParser{
     public:
         InputParser (int &argc, char **argv){
@@ -117,23 +90,6 @@ class InputParser{
     private:
         std::vector <std::string> tokens;
 };
-
-void motor_test(short ml_speed_, short mr_speed_){
-    init_motors();
-    //pose << 0, 0, 0;  // Initial pose (x, y, theta)
-    //init_odometry(pose);
-	while(1){
-		delay(100);
-		call_motors(ml_speed_, mr_speed_);
-        update_odometry_pose();
-        //pose = get_odometry_pose();
-        //printf("x=%f y=%f theta=%f\n",pose(0),pose(1),pose(2));
-        MatrixXf cov = get_odometry_cov();
-        printf("covariance: \n");
-        cout << cov << endl;
-        printf("________________________________\n");
-	}
-}
 
 void init_robot(){
 
@@ -223,6 +179,56 @@ int main(int argc, char **argv){
     else{
         y = 0;
     }
+
+    // Create a camera feed
+    VideoCapture cap(0);
+
+    if (!cap.isOpened()){
+        cout << "Error opening video stream" << endl;
+        return -1;
+    }
+
+    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+    while(1){
+        // Calculate the elapsed time
+        chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
+
+        // Check if 10ms have passed
+        if (elapsedTime.count() < 0.01){
+            continue;
+        }
+        
+        // Update the start time for the next iteration
+        start = chrono::high_resolution_clock::now();
+
+        // Get the image
+        Mat image;
+        cap >> image;
+        resize(image, image, Size(640, 480));
+        rotate(image, image, ROTATE_180);   // Rotate the image 180 degrees
+
+        // Set the HSV color bounds for the filter
+        Scalar lower = Scalar(55, 47, 0);
+        Scalar upper = Scalar(135, 255, 255);
+
+        // Process the image
+        vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
+        vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
+        vector<Point> inner_number_contour;   // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
+        int predicted_number;   // Predicted number on the box
+        float d;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
+        process_image(image, lower, upper, &predicted_number, &box_contour, &number_contour, &inner_number_contour, &d);
+        
+        // Visualise the results
+        Mat vis_img = visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
+
+        imshow("Image", vis_img);
+        waitKey(25);
+
+    }
+
+    return 0;
 
     cout << "Left speed: " << left_speed << endl;
     cout << "Right speed: " << right_speed << endl;

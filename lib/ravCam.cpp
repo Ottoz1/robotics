@@ -9,7 +9,7 @@ void process_image(Mat image, Scalar lower, Scalar upper, int* predicted_number,
     find_important_contours(lower, upper, image, &box_contour, &number_contour, &inner_number_contour);
 
     // Predict the number based on the ratio of the inner number to the outer number areas
-    int pred = predict_number(number_contour, inner_number_contour);
+    int pred = predict_number(number_contour, inner_number_contour, box_contour);
 
     // Find the D value, a number between -1 and 1 in the X direction
     float d = find_d(image, box_contour);
@@ -41,14 +41,19 @@ void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point
     // Find the largest contour (the box)
     int box_index = biggest_within(contours, vector<Point>());
     vector<Point> largest_contour = contours[box_index];
+    cout << "Box area: " << contourArea(largest_contour) << endl;
 
     // Find the second largest contour (the number) and make sure it's inside the box
     int second_largest_contour_index = biggest_within(contours, largest_contour);
     vector<Point> second_largest_contour = contours[second_largest_contour_index];
+    cout << "Number area: " << contourArea(second_largest_contour) << endl;
 
     // Find the third largest contour (the number) and make sure it's inside number (second largest contour)
     int third_largest_contour_index = biggest_within(contours, second_largest_contour);
     vector<Point> third_largest_contour = contours[third_largest_contour_index];
+    cout << "Inner area: " << contourArea(third_largest_contour) << endl;
+
+    cout << "_______________________" << endl;
 
     *box_countour_ptr = largest_contour;
     *number_contour_ptr = second_largest_contour;
@@ -84,10 +89,15 @@ int biggest_within(vector<vector<Point> > contours, vector<Point> within)
     return largest_contour_index;
 }
 
-int predict_number(vector<Point> number_contour, vector<Point> inner_number_contour)
+int predict_number(vector<Point> number_contour, vector<Point> inner_number_contour, vector<Point> box_contour)
 {
     float inner_area = (float)contourArea(inner_number_contour);    // if it's 1, this will be 0 or close to 0
     float number_area = (float)contourArea(number_contour);
+    float box_area = (float)contourArea(box_contour);
+
+    if(box_area == inner_area)
+        return 1;
+
     float ratio = inner_area / number_area;
     if (ratio < 0.1)
         return 1;
@@ -114,7 +124,7 @@ float find_d(Mat img, vector<Point> contour) {
     return d;
 }
 
-void visualize_results(Mat image, vector<Point> largest_contour, vector<Point> number_contour, vector<Point> third_contour, int predicted_number)
+Mat visualize_results(Mat image, vector<Point> largest_contour, vector<Point> number_contour, vector<Point> third_contour, int predicted_number)
 {
     Mat img = image.clone();    // Make a copy of the image so we don't modify the original
 
@@ -135,8 +145,5 @@ void visualize_results(Mat image, vector<Point> largest_contour, vector<Point> n
     circle(img, contcent, 5, Scalar(0, 0, 0), FILLED);
     circle(img, imgcent, 5, Scalar(0, 255, 0), FILLED);
 
-    // Show the image
-    namedWindow("Image", WINDOW_AUTOSIZE);
-    imshow("Image", img);
-    waitKey(0);
+    return img;
 }
