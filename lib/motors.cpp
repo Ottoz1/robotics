@@ -1,6 +1,7 @@
 #include "motors.hpp"
 #include "units.hpp"
 #include "odometry.hpp"
+#include <Eigen/Dense>
 
 MotorDataType MotorData;
 static const int SPI_Channel = 1;
@@ -87,4 +88,44 @@ int get_l_motorSpeed(){
 
 int get_r_motorSpeed(){
     return (int)MotorData.Act_Speed_M2 * -1;
+}
+
+
+// Motor user functions
+void stop_motors(){
+    call_motors(0, 0);
+}
+
+void go_to((const Eigen::VectorXf& targetPosition)){
+    Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
+    double distance_integral = 0.0;
+    double theta_integral = 0.0;
+    double prev_distance_error = 0.0;
+    double prev_theta_error = 0.0;
+
+    double tolerance = 10; //tolerance in mm
+
+    while ((targetPosition - currentPosition).norm() > tolerance){
+        currentPosition = get_odometry_pose();  // Update current position
+        Eigen::VectorXf error = targetPosition - currentPosition;
+        double distance_error = error.head<2>().norm();  // Distance error
+        double theta_error = atan2(error[1], error[0]) - currentPosition[2];  // Angle error
+
+        distance_integral += distance_error;
+        theta_integral += theta_error;
+
+        double distance_controlOutput = calculatePI(distance_error, distance_integral, Kp_distance, Ki_distance);
+        double theta_controlOutput = calculatePI(theta_error, theta_integral, Kp_theta, Ki_theta);
+
+        // Adjust motor speeds based on control output
+        double leftWheelSpeed = std::max(std::min(distance_controlOutput - theta_controlOutput, 3000), -3000);
+        double rightWheelSpeed = std::max(std::min(distance_controlOutput + theta_controlOutput, 3000), -3000);
+
+        call_motors(leftWheelSpeed, rightWheelSpeed);
+
+        prev_distance_error = distance_error;
+        prev_theta_error = theta_error;
+    }
+
+    stop_motors();
 }
