@@ -8,6 +8,22 @@ void process_image(Mat image, Scalar lower, Scalar upper, int* predicted_number,
     vector<Point> inner_number_contour;    // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
     find_important_contours(lower, upper, image, &box_contour, &number_contour, &inner_number_contour);
 
+    if (box_contour.empty() || number_contour.empty() || inner_number_contour.empty()) {
+        //printf("No contours found between the given HSV color bounds");
+        *D = 0;
+        *predicted_number = -2;
+        box_contour = vector<Point>();
+        number_contour = vector<Point>();
+        inner_number_contour = vector<Point>();
+        box_contour.push_back(Point(0, 0));
+        number_contour.push_back(Point(0, 0));
+        inner_number_contour.push_back(Point(0, 0));
+        *box_contour_ptr = box_contour;
+        *number_contour_ptr = number_contour;
+        *inner_number_contour_ptr = inner_number_contour;
+        return;
+    }
+
     // Predict the number based on the ratio of the inner number to the outer number areas
     int pred = predict_number(number_contour, inner_number_contour, box_contour);
 
@@ -34,26 +50,21 @@ void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point
     findContours(imgHSV, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
     if (contours.size() < 2){   // We need at least a box and a number on it, two contours
-        printf("No contours found between the given HSV color bounds");
+        //printf("No contours found between the given HSV color bounds");
         return;
     }
 
     // Find the largest contour (the box)
     int box_index = biggest_within(contours, vector<Point>());
     vector<Point> largest_contour = contours[box_index];
-    cout << "Box area: " << contourArea(largest_contour) << endl;
 
     // Find the second largest contour (the number) and make sure it's inside the box
     int second_largest_contour_index = biggest_within(contours, largest_contour);
     vector<Point> second_largest_contour = contours[second_largest_contour_index];
-    cout << "Number area: " << contourArea(second_largest_contour) << endl;
 
     // Find the third largest contour (the number) and make sure it's inside number (second largest contour)
     int third_largest_contour_index = biggest_within(contours, second_largest_contour);
     vector<Point> third_largest_contour = contours[third_largest_contour_index];
-    cout << "Inner area: " << contourArea(third_largest_contour) << endl;
-
-    cout << "_______________________" << endl;
 
     *box_countour_ptr = largest_contour;
     *number_contour_ptr = second_largest_contour;
