@@ -136,30 +136,16 @@ void kalman_test(){
 }
 
 int main(int argc, char **argv){
-    short right_speed;
-    short left_speed;
+    int p1 = 0;
+    int p2 = 0;
 
     // Get input arguments and set motor speeds accordingly
     InputParser input(argc, argv);
-    if(input.cmdOptionExists("-v")){
-        max_v = 14.7;
+    if(input.cmdOptionExists("-p1")){
+        p1 = stoi(input.getCmdOption("-p1"));
     }
-    else{
-        max_v = 14.7;
-    }
-
-    if(input.cmdOptionExists("-x")){
-        x = stoi(input.getCmdOption("-x"));
-    }
-    else{
-        y = 0;
-    }
-
-    if(input.cmdOptionExists("-y")){
-        y = stoi(input.getCmdOption("-y"));
-    }
-    else{
-        y = 0;
+    if(input.cmdOptionExists("-p2")){
+        p2 = stoi(input.getCmdOption("-p2"));
     }
 
     kalman_test();
@@ -168,11 +154,14 @@ int main(int argc, char **argv){
 
     // Create a camera feed
     VideoCapture cap(0);
-
     if (!cap.isOpened()){
         cout << "Error opening video stream" << endl;
         return -1;
     }
+
+    init_motors();
+
+
 
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     while(1){
@@ -195,29 +184,38 @@ int main(int argc, char **argv){
         rotate(image, image, ROTATE_180);   // Rotate the image 180 degrees
 
         // Set the HSV color bounds for the filter
-        Scalar lower = Scalar(55, 47, 0);
-        Scalar upper = Scalar(135, 255, 255);
+        Scalar lower = Scalar(97, 56, 58);
+        Scalar upper = Scalar(113, 218, 134);
 
         // Process the image
         vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
         vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
         vector<Point> inner_number_contour;   // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
         int predicted_number;   // Predicted number on the box
-        float d;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
+        float d = 0;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
         process_image(image, lower, upper, &predicted_number, &box_contour, &number_contour, &inner_number_contour, &d);
         
+        p1 = 3000;  // Forward speed P value
+        p2 = 800;   // Turning speed P value
+        int left_speed = p1 + d*p2;
+        int right_speed = p1 - d*p2;
+        cout << "left_speed: " << left_speed << " right_speed: " << right_speed << endl;
+        call_motors(left_speed, right_speed); 
+
+        if (box_contour.size() == 0 || number_contour.size() == 0 || inner_number_contour.size() == 0){
+            imshow("Image", image);
+            waitKey(25);
+            continue;
+        }
+
         // Visualise the results
         Mat vis_img = visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
 
         imshow("Image", vis_img);
         waitKey(25);
-
     }
 
     return 0;
-
-    cout << "Left speed: " << left_speed << endl;
-    cout << "Right speed: " << right_speed << endl;
 
     kalman_test();
 
