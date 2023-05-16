@@ -1,7 +1,7 @@
 #include "motors.hpp"
 #include "units.hpp"
 #include "odometry.hpp"
-#include <Eigen/Dense>
+#include "pid.hpp"
 
 MotorDataType MotorData;
 static const int SPI_Channel = 1;
@@ -96,14 +96,21 @@ void stop_motors(){
     call_motors(0, 0);
 }
 
-void go_to((const Eigen::VectorXf& targetPosition)){
+void go_to(Eigen::VectorXf& targetPosition){
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
     double distance_integral = 0.0;
     double theta_integral = 0.0;
     double prev_distance_error = 0.0;
     double prev_theta_error = 0.0;
 
-    double tolerance = 10; //tolerance in mm
+    double Kp_distance = 5;
+    double Kp_theta = 5000;
+    double Ki_distance = 0;
+    double Ki_theta = 0;
+    double Kd_distance = 0;
+    double Kd_theta = 0;
+
+    double tolerance = 30; //tolerance in mm
 
     while ((targetPosition - currentPosition).norm() > tolerance){
         currentPosition = get_odometry_pose();  // Update current position
@@ -111,17 +118,29 @@ void go_to((const Eigen::VectorXf& targetPosition)){
         double distance_error = error.head<2>().norm();  // Distance error
         double theta_error = atan2(error[1], error[0]) - currentPosition[2];  // Angle error
 
+        cout << "currentPosition: " << currentPosition << endl;
+        cout << "targetPosition: " << targetPosition << endl;
+        cout << "distance_error: " << distance_error << " theta_error: " << theta_error << endl;
+
         distance_integral += distance_error;
         theta_integral += theta_error;
 
-        double distance_controlOutput = calculatePI(distance_error, distance_integral, Kp_distance, Ki_distance);
-        double theta_controlOutput = calculatePI(theta_error, theta_integral, Kp_theta, Ki_theta);
+        // P controller as in PID with Ki and Kd = 0
+        double distance_controlOutput = calculatePID(distance_error, distance_integral, prev_distance_error, Kp_distance, Ki_distance, Kd_distance);
+        double theta_controlOutput = calculatePID(theta_error, theta_integral, prev_theta_error, Kp_theta, Ki_theta, Kd_theta);
 
         // Adjust motor speeds based on control output
-        double leftWheelSpeed = std::max(std::min(distance_controlOutput - theta_controlOutput, 3000), -3000);
-        double rightWheelSpeed = std::max(std::min(distance_controlOutput + theta_controlOutput, 3000), -3000);
+        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 3000.0), -3000.0);
+        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 3000.0), -3000.0);
+        distance_controlOutput = distance_controlOutput - abs(theta_controlOutput);
+        leftWheelSpeed += std::max(std::min(distance_controlOutput, 3000.0), -3000.0);
+        rightWheelSpeed += std::max(std::min(distance_controlOutput, 3000.0), -3000.0);
+        
+        cout << "leftWheelSpeed: " << leftWheelSpeed << " rightWheelSpeed: " << rightWheelSpeed << endl;
 
         call_motors(leftWheelSpeed, rightWheelSpeed);
+leftWheelSpeed -= std::max(std::min(theta_controlOutput, 3000.0), -3000.0);
+        rightWheelSpeed += std::max(std::min(theta_controlOutput, 3000.0), -3000.0);
 
         prev_distance_error = distance_error;
         prev_theta_error = theta_error;

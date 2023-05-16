@@ -26,7 +26,7 @@ VectorXf pos = VectorXf::Zero(3);
 MatrixXf cov = MatrixXf::Zero(3, 3);
 vector<vector<float>> positions_s;
 vector<vector<float>> wheelVelocities;
-vector<float> start_pos = {190, 1230, 0};
+vector<float> start_pos = {620, 730, 1.6};
 vector<float> end_pos = {790, 480, M_PI/4};
 vector<float> r_wheel_vel;
 vector<float> l_wheel_vel;
@@ -124,10 +124,12 @@ float errorTheta(VectorXf actual, vector<float> expected){
 
 void kalman_test(){
     init_robot();
+    VectorXf endPos = VectorXf::Zero(3);
+    endPos << end_pos[0], end_pos[1], end_pos[2];
     thread th1(listenLidar);
     thread th2(positionUpdater);
     
-    go_to(end_pos);
+    go_to(endPos);
 
     th1.join();
     th2.join();
@@ -159,6 +161,10 @@ int main(int argc, char **argv){
     else{
         y = 0;
     }
+
+    kalman_test();
+
+    return 0;
 
     // Create a camera feed
     VideoCapture cap(0);

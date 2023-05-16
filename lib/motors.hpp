@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <Eigen/Dense>
+
 extern "C" {
     #include <wiringPi.h>
     #include <wiringPiSPI.h>
@@ -20,3 +22,8 @@ int get_l_encoder();
 int get_r_encoder();
 int get_l_motorSpeed();
 int get_r_motorSpeed();
+
+//User functions..
+
+void stop_motors();
+void go_to(Eigen::VectorXf& targetPosition);
