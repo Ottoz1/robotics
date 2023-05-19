@@ -225,3 +225,22 @@ Mat visualize_results(Mat frame, vector<Rect> boxes, vector<int> identity){
 
     return frame_copy;
 }
+
+// This function finds the normalized distance between the center of the contour and the center of the image in the X direction
+float find_d(Mat img, Rect box) {
+    // Find the center of the box
+    Point cont_center = Point(box.x + box.width / 2, box.y + box.height / 2);
+    Point img_center = Point(img.cols / 2, img.rows / 2);
+
+    // We only care about the X direction
+    float x_img = (float)img_center.x;
+    float x_cont = (float)cont_center.x;
+
+    // If the center of the image was (0, 0), then relative x = x_cont - x_img
+    float relative_x = x_cont - x_img;
+
+    // Normalize the distance so that the distance is in the range [-1, 1]
+    float d = relative_x / x_img;
+
+    return d;
+}
