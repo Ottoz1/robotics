@@ -3,7 +3,7 @@
 void process_image(Mat image, Scalar lower, Scalar upper, int* predicted_number, vector<Point>* box_contour_ptr, vector<Point>* number_contour_ptr, vector<Point>* inner_number_contour_ptr, float* D)
 {
     // Find the 3 most important contours
-    vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
+    vector<Point> box_contour;  // Biggest contour in the image (supposed to be the box)
     vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
     vector<Point> inner_number_contour;    // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
     find_important_contours(lower, upper, image, &box_contour, &number_contour, &inner_number_contour);
@@ -49,7 +49,7 @@ void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point
     vector<Vec4i> hierarchy;
     findContours(imgHSV, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-    if (contours.size() < 2){   // We need at least a box and a number on it, two contours
+    if (contours.size() < 5){   // We need at least a box and a number on it, two contours
         //printf("No contours found between the given HSV color bounds");
         return;
     }
