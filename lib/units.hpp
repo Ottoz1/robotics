@@ -12,7 +12,7 @@ using namespace Eigen;
 const float Motor_C = 4096.0;   // Motor count per revolution
 const float Gearbox1 = 6.6/1.0; // Gearbox 1 ratio
 const float Motor_C2 = Motor_C * Gearbox1; // Motor count per revolution after gearbox 1
-const float Gearbox2 = 24.0/1.0; // Gearbox 2 ratio
+const float Gearbox2 = 16.0/1.0; // Gearbox 2 ratio
 const float COUNT_PER_REV = Motor_C2 * Gearbox2; // Motor count per revolution after gearbox 2
 
 // Measurement constants

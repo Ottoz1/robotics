@@ -119,8 +119,7 @@ void kalman_test(){
     th1.join();
     th2.join();
 }
-/*
-
+/**/
 void followBox(float d){
     int p1 = 3000;   // Forward speed P value
     int p2 = 250;   // Turning speed P value
@@ -129,6 +128,7 @@ void followBox(float d){
     p1 = 3000 - abs(d)*p1;
     left_speed += p1;
     right_speed += p1;
+    call_motors(left_speed, right_speed);
 }
 /*
  * Behaviour of robot
@@ -137,7 +137,11 @@ void followBox(float d){
  /*
 int collectBoxes(){
 
-    vector<float> initial_scan_pos = {1000, 1070, 0};
+    Eigen::VectorXf initialScanPos = VectorXf::Zero(3);
+    initialScanPos << 1200, 1070, 0;
+    Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
+    VectorXf startPos = VectorXf::Zero(3);
+    startPos << (start_pos[0] + 200), start_pos[1], start_pos[2];
 
     init_robot();
     thread th1(listenLidar);
@@ -153,7 +157,7 @@ int collectBoxes(){
     init_motors();
 
     //start by going forward 400mm in x direction
-    go_to(initial_scan_pos);
+    go_to(initialScanPos);
 
     //start main loop with default behaviour of spinning in place until a box is found with class 1
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
@@ -191,9 +195,36 @@ int collectBoxes(){
 
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
         for(int i = 0; i < identify.count(); i++){
+            if(identity[i] == -4){
+                if(boxes[i].area() > 10000){
+                    //if the area is large, go home
+                    go_to(startPos);
+                    goto exit;
+                }
+                else{
+                    //if the area is small, continue collecting boxes
+                }
+            }
+            if(identity[i] == 1){
+                float d = find_d(image, boxes[i]);
+                followBox(d);
+            }
+        }
+
+        //if no box is found, spin in place
+        if(boxes.size() == 0){
+            call_motors(250, -250);
         }
 
     }
+
+    exit:
+
+    th1.join();
+    th2.join();
+
+    return;
+
 
 
     //exit loop
@@ -204,6 +235,7 @@ int collectBoxes(){
 
 }
 */
+
 
 int main(int argc, char **argv){
     int p1 = 0;
