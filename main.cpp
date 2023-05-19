@@ -29,7 +29,7 @@ VectorXf pos = VectorXf::Zero(3);
 MatrixXf cov = MatrixXf::Zero(3, 3);
 vector<vector<float>> positions_s;
 vector<vector<float>> wheelVelocities;
-vector<float> start_pos = {600, 1070, 1.57};
+vector<float> start_pos = {600, 1070, 0};
 vector<float> end_pos = {790, 480, M_PI/2};
 vector<float> r_wheel_vel;
 vector<float> l_wheel_vel;
@@ -143,7 +143,86 @@ void kalman_test(){
     th2.join();
 }
 
+void followBox(float d){
+    int p1 = 3000;   // Forward speed P value
+    int p2 = 250;   // Turning speed P value
+    int left_speed = d*p2;
+    int right_speed = -d*p2;
+    p1 = 3000 - abs(d)*p1;
+    left_speed += p1;
+    right_speed += p1;
+}
+/*
+ * Behaviour of robot
+ * Default behaviour: 
+ */
 void collectBoxes(){
+
+    vector<float> initial_scan_pos = {1000, 1070, 0};
+
+    init_robot();
+    thread th1(listenLidar);
+    thread th2(positionUpdater);
+
+    // Create a camera feed
+    VideoCapture cap(0);
+    if (!cap.isOpened()){
+        cout << "Error opening video stream" << endl;
+        return -1;
+    }
+
+    init_motors();
+
+    //start by going forward 400mm in x direction
+    go_to(initial_scan_pos);
+
+    //start main loop with default behaviour of spinning in place until a box is found with class 1
+    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+    while(1){
+        // Calculate the elapsed time
+        chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
+
+        // Check if 10ms have passed
+        if (elapsedTime.count() < 0.01){
+            continue;
+        }
+        //
+        //once a box is found with class 1, go to it
+        // Get the image
+        Mat image;
+        cap >> image;
+        resize(image, image, Size(640, 480));
+        rotate(image, image, ROTATE_180);   // Rotate the image 180 degrees
+
+        // Set the HSV color bounds for the filter
+        Scalar lower = Scalar(70, 42, 0);
+        Scalar upper = Scalar(139, 255, 255);
+
+        // Process the frame
+        vector<Rect> boxes;
+        vector<int> identity;
+        process_frame(image, lower, upper, boxes, identity);
+
+        // Visualize the results
+        Mat result = visualize_results(image, boxes, identity);
+        imshow("Image", result);
+        waitKey(25);
+
+
+        //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
+        for(int i = 0; i < identify.count(); i++){
+            if 
+        }
+
+    }
+
+
+    //exit loop
+
+    //go home
+
+    //reverse
 
 }
 
@@ -187,92 +266,7 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    //kalman_test();
-
-    //return 0;
-
-    init_robot();
-    thread th1(listenLidar);
-    thread th2(positionUpdater);
-
-    // Create a camera feed
-    VideoCapture cap(0);
-    if (!cap.isOpened()){
-        cout << "Error opening video stream" << endl;
-        return -1;
-    }
-
-    init_motors();
-
-
-
-    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
-    while(1){
-        // Calculate the elapsed time
-        chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
-        chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
-
-        // Check if 10ms have passed
-        if (elapsedTime.count() < 0.01){
-            continue;
-        }
-        Eigen::VectorXf currentPosition = get_odometry_pose();
-        cout << "Position: " << currentPosition << endl;
-        
-        // Update the start time for the next iteration
-        start = chrono::high_resolution_clock::now();
-
-        // Get the image
-        Mat image;
-        cap >> image;
-        resize(image, image, Size(640, 480));
-        rotate(image, image, ROTATE_180);   // Rotate the image 180 degrees
-
-        // Set the HSV color bounds for the filter
-        Scalar lower = Scalar(97, 56, 58);
-        Scalar upper = Scalar(113, 218, 134);
-
-        // Process the image
-        vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
-        vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
-        vector<Point> inner_number_contour;   // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
-        int predicted_number;   // Predicted number on the box
-        float d = 0;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
-        process_image(image, lower, upper, &predicted_number, &box_contour, &number_contour, &inner_number_contour, &d);
-
-        p1 = 3000;   // Forward speed P value
-        p2 = 250;   // Turning speed P value
-        int left_speed = d*p2;
-        int right_speed = -d*p2;
-        p1 = 3000 - abs(d)*p1;
-        left_speed += p1;
-        right_speed += p1;
-
-        //if no box is found, slowly turn
-        if (box_contour.size() == 0){
-            left_speed = 250;
-            right_speed = -250;
-        }
-
-        cout << "left_speed: " << left_speed << " right_speed: " << right_speed << endl;
-        call_motors(left_speed, right_speed); 
-
-        if (box_contour.size() == 0 || number_contour.size() == 0 || inner_number_contour.size() == 0){
-            imshow("Image", image);
-            waitKey(25);
-            continue;
-        }
-
-        // Visualise the results
-        Mat vis_img = visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
-
-        imshow("Image", vis_img);
-        waitKey(25);
-    }
-
-    return 0;
-
-    kalman_test();
+    collectBoxes();
 
     lidarRunning = 0;
 
