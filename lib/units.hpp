@@ -24,7 +24,7 @@ const float WHEEL_RADIUS = WHEEL_DIAMETER / 2;  // Radius of the wheels (in mm)
 const float MM_PER_COUNT = WHEEL_CIRCUMFERENCE / COUNT_PER_REV;  // Distance traveled per encoder count (in mm)
 
 // Wheel uncertainty
-const float SIGMA_WHEEL_ENCODER = 0.5 / 12;  // Uncertainty of the wheel encoder (in mm)
+const float SIGMA_WHEEL_ENCODER = 0.7;  // Uncertainty of the wheel encoder (in mm)
 const float SIGMAl = SIGMA_WHEEL_ENCODER;
 const float SIGMAr = SIGMA_WHEEL_ENCODER;
 

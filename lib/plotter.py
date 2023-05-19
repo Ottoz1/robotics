@@ -51,9 +51,15 @@ def plot_points():
     if len(x_coords) < 10:
         return
 
+    colors = ['r', 'g', 'b']
+
     # clear the previous plot and plot the new points
     plt.clf()
-    plt.plot(x_coords, y_coords, 'o')
+    
+    # Plot all 3 points according to their color
+    for i in range(3):
+        plt.scatter(x_coords[i::3], y_coords[i::3], c=colors[i])
+
 
     # Plot a box around the points
     W = env_measures[0]

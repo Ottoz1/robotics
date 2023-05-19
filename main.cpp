@@ -108,10 +108,13 @@ void kalman_test(){
     init_robot();
     VectorXf endPos = VectorXf::Zero(3);
     endPos << end_pos[0], end_pos[1], end_pos[2];
+    VectorXf startPos = VectorXf::Zero(3);
+    startPos << (start_pos[0] + 200), start_pos[1], start_pos[2];
     thread th1(listenLidar);
     thread th2(positionUpdater);
     
     go_to(endPos);
+    go_to(startPos);
 
     th1.join();
     th2.join();
