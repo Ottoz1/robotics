@@ -23,8 +23,18 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter, Matr
         MatrixXf targets = assign_points_to_lines(pts, line_segments, normals, &distances, &new_normals);
 
         // Prune the outliers
+        MatrixXf temp_pts = pts;   // Create a copy of the points to restore them later
         prune_outliers(&pts, &distances, &targets, &new_normals);   // This will reduce the number of elements on all these matrices
  
+        // Check if we have enough points left
+        if (pts.rows() < 50)
+        {
+            // Return the odometry pose and covariance
+            VectorXf result(3);
+            result << -1000000.0f, -1000000.0f, -1000000.0f;
+            return result;
+        }
+
         // Setup the variables of the linear system of equations (least squares problem)
         VectorXf y = get_signed_distance(pts, targets, new_normals); // The signed distance from the points to the line segments
         VectorXf xi1 = new_normals.col(0);  // The x component of the normal vector of the line segments
@@ -64,7 +74,7 @@ VectorXf cox_linefit(MatrixXf points, MatrixXf line_segments, int max_iter, Matr
         // Update the points with the new translation and rotation
         VectorXf transformation(3);
         transformation << ddx, ddy, dda;
-        pts = transform_points(points, transformation);
+        pts = transform_points(temp_pts, transformation);
 
         // Check if the algorithm has converged
         if (b.norm() < 0.0001f)
@@ -247,7 +257,7 @@ MatrixXf polar_to_cart(MatrixXf polar){
 }
 
 void prune_outliers(MatrixXf *pts, MatrixXf *distances_to_wall, MatrixXf *targets, MatrixXf *normals){
-    float mean = distances_to_wall->mean(); // Find the mean of the distances
+    float threshold = 200.0f;    // The threshold for the distance to the wall in mm
 
     MatrixXf temp_pts = MatrixXf::Zero((*pts).rows(), 2);
     MatrixXf temp_dist = VectorXf::Zero((*pts).rows());
@@ -256,7 +266,7 @@ void prune_outliers(MatrixXf *pts, MatrixXf *distances_to_wall, MatrixXf *target
 
     int j = 0;
     for (int i = 0; i < (*pts).rows(); i++){
-        if(distances_to_wall->coeffRef(i) < mean + 20){ // If the distance is less than the mean + 20
+        if(distances_to_wall->coeffRef(i) < threshold){
             temp_pts.row(j) = (*pts).row(i); // Add the point to the pruned points matrix
             temp_dist.row(j) = (*distances_to_wall).row(i); // Add the distance to the new distances matrix
             temp_targets.row(j) = (*targets).row(i); // Add the target to the new targets matrix

@@ -26,6 +26,12 @@ int positionUpdater(){
 
             transformation = cox_linefit(cart, line_segments, 100, &covC);
 
+            // Check if transformation is -1000000, -1000000, -1000000
+            if(transformation(0) == -1000000 && transformation(1) == -1000000 && transformation(2) == -1000000){
+                dataReady=0;
+                continue;
+            }
+
             posC(0) += transformation(0);
             posC(1) += transformation(1);
             posC(2) += transformation(2);
