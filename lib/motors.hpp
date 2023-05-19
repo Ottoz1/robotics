@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <Eigen/Dense>
+#include <chrono>
 
 extern "C" {
     #include <wiringPi.h>
@@ -27,3 +28,4 @@ int get_r_motorSpeed();
 
 void stop_motors();
 void go_to(Eigen::VectorXf& targetPosition);
+void turn(float theta);

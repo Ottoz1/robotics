@@ -4,7 +4,7 @@ import time
 import os
 
 # configure SSH connection parameters
-hostname = '192.168.170.194'
+hostname = '192.168.90.111'
 username = 'pi'
 password = '1234'
 remote_path = '/home/pi/robotics/build/points.txt'

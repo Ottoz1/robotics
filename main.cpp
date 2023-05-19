@@ -5,6 +5,8 @@
 #include "lib/odometry.hpp"
 #include "lib/positionUpdate.hpp"
 #include "lib/speedProfile.hpp"
+#include "odometry.hpp"
+#include "pid.hpp"
 #include <time.h>
 #include <iostream>
 #include <thread>
@@ -12,6 +14,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <chrono>
+
 
 using namespace std;
 using namespace Eigen;
@@ -26,8 +29,8 @@ VectorXf pos = VectorXf::Zero(3);
 MatrixXf cov = MatrixXf::Zero(3, 3);
 vector<vector<float>> positions_s;
 vector<vector<float>> wheelVelocities;
-vector<float> start_pos = {620, 730, 1.6};
-vector<float> end_pos = {790, 480, M_PI/4};
+vector<float> start_pos = {600, 1070, 1.57};
+vector<float> end_pos = {790, 480, M_PI/2};
 vector<float> r_wheel_vel;
 vector<float> l_wheel_vel;
 int dataReady = 0;
@@ -97,8 +100,13 @@ void init_robot(){
     float dt = 0.01; // 10ms
     float acceleration = 10 * max_vel; // mm/10ms^2
     float dir = 0;
+    
     end_pos[0] = x;
     end_pos[1] = y;
+    start_pos[0] = xs;
+    start_pos[1] = ys;
+    start_pos[2] = theta;
+    
     speedProfile sp(max_vel, dt, acceleration, start_pos, end_pos, dir);
     sp.run();
     wheelVelocities = sp.getWheelVelocities();
@@ -111,7 +119,7 @@ void init_robot(){
 
     positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos[0], start_pos[1], dir);
     VectorXf start_pose(3);
-    start_pose << 190, 1230, 0;  // Initial pose (x, y, theta)
+    start_pose << start_pos[0], start_pos[1], start_pos[2];
     init_motors();
     init_odometry(start_pose);
     initLidar();
@@ -135,6 +143,10 @@ void kalman_test(){
     th2.join();
 }
 
+void collectBoxes(){
+
+}
+
 int main(int argc, char **argv){
     int p1 = 0;
     int p2 = 0;
@@ -147,10 +159,41 @@ int main(int argc, char **argv){
     if(input.cmdOptionExists("-p2")){
         p2 = stoi(input.getCmdOption("-p2"));
     }
+    if(input.cmdOptionExists("-x")){
+        x = stoi(input.getCmdOption("-x"));
+    }
+    if(input.cmdOptionExists("-y")){
+        y = stoi(input.getCmdOption("-y"));
+    }
+    if(input.cmdOptionExists("-xs")){
+        xs = stoi(input.getCmdOption("-xs"));
+    }
+    if(input.cmdOptionExists("-ys")){
+        ys = stoi(input.getCmdOption("-ys"));
+    }
+    if(input.cmdOptionExists("-theta")){
+        theta = stof(input.getCmdOption("-theta"));
+    }
+    if(input.cmdOptionExists("-h")){
+        cout << "Usage: ./main [-p1 <p1>] [-p2 <p2>] [-x <x>] [-y <y>] [-xs <xs>] [-ys <ys>] [-theta <theta>] [-h]" << endl;
+        cout << "p1: P value for forward speed" << endl;
+        cout << "p2: P value for turning speed" << endl;
+        cout << "x: x coordinate of end position" << endl;
+        cout << "y: y coordinate of end position" << endl;
+        cout << "xs: x coordinate of start position" << endl;
+        cout << "ys: y coordinate of start position" << endl;
+        cout << "theta: theta coordinate of start position" << endl;
+        cout << "h: help" << endl;
+        return 0;
+    }
 
-    kalman_test();
+    //kalman_test();
 
-    return 0;
+    //return 0;
+
+    init_robot();
+    thread th1(listenLidar);
+    thread th2(positionUpdater);
 
     // Create a camera feed
     VideoCapture cap(0);
@@ -173,6 +216,8 @@ int main(int argc, char **argv){
         if (elapsedTime.count() < 0.01){
             continue;
         }
+        Eigen::VectorXf currentPosition = get_odometry_pose();
+        cout << "Position: " << currentPosition << endl;
         
         // Update the start time for the next iteration
         start = chrono::high_resolution_clock::now();
@@ -194,11 +239,21 @@ int main(int argc, char **argv){
         int predicted_number;   // Predicted number on the box
         float d = 0;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
         process_image(image, lower, upper, &predicted_number, &box_contour, &number_contour, &inner_number_contour, &d);
-        
-        p1 = 3000;  // Forward speed P value
-        p2 = 800;   // Turning speed P value
-        int left_speed = p1 + d*p2;
-        int right_speed = p1 - d*p2;
+
+        p1 = 3000;   // Forward speed P value
+        p2 = 250;   // Turning speed P value
+        int left_speed = d*p2;
+        int right_speed = -d*p2;
+        p1 = 3000 - abs(d)*p1;
+        left_speed += p1;
+        right_speed += p1;
+
+        //if no box is found, slowly turn
+        if (box_contour.size() == 0){
+            left_speed = 250;
+            right_speed = -250;
+        }
+
         cout << "left_speed: " << left_speed << " right_speed: " << right_speed << endl;
         call_motors(left_speed, right_speed); 
 
