@@ -27,19 +27,9 @@ void process_frame(Mat frame, Scalar lower, Scalar upper, vector<Rect>& boxes, v
     identity_out = identity;
 }
 
-// This function runs the images through the filter and returns the filtered image
-void find_important_contours(Scalar lower, Scalar upper, Mat image, vector<Point>* box_countour_ptr, vector<Point>* number_contour_ptr, vector<Point>* inner_number_contour_ptr) {
-    Mat imgHSV;
-    cvtColor(image, imgHSV, COLOR_BGR2HSV);
-    inRange(imgHSV, lower, upper, imgHSV);
-
-    // Get contours and only keep the one with the largest area
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    findContours(imgHSV, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
-
-    if (contours.size() < 2){   // We need at least a box and a number on it, two contours
-        //printf("No contours found between the given HSV color bounds");
+void extract_interesting_areas(vector<vector<Point>>& conts, vector<Vec4i>& hierarchy, Mat& frame, Mat& mask, vector<Rect>& interesting_boxes, vector<vector<Point>>& interesting_conts, vector<int>& identity) 
+{
+    if (conts.empty()) {
         return;
     }
 
