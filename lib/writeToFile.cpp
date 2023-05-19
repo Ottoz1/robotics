@@ -38,8 +38,6 @@ void append_cox(VectorXf pos, MatrixXf cov) {
         }
     }
 
-    cout << "Cox time: " << now << endl;
-
     // Write row to file
     log << row.transpose() << endl;
 }
@@ -59,8 +57,6 @@ void append_kalman(VectorXf pos, MatrixXf cov) {
             row(1 + pos.size() + i * cov.cols() + j) = cov(i, j);
         }
     }
-
-    cout << "Kalm time: " << now << endl;
 
     // Write row to file
     log << row.transpose() << endl;
