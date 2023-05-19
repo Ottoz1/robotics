@@ -187,9 +187,9 @@ void go_to(Eigen::VectorXf& targetPosition){
         double theta_error = atan2(error[1], error[0]) - currentPosition[2];  // Angle error
         //theta_error = normalizeAngle(theta_error);
 
-        cout << "currentPosition: " << currentPosition << endl;
-        cout << "targetPosition: " << targetPosition << endl;
-        cout << "distance_error: " << distance_error << " theta_error: " << theta_error << endl;
+        //cout << "currentPosition: " << currentPosition << endl;
+        //cout << "targetPosition: " << targetPosition << endl;
+        //cout << "distance_error: " << distance_error << " theta_error: " << theta_error << endl;
 
         distance_integral += distance_error;
         theta_integral += theta_error;
@@ -205,7 +205,7 @@ void go_to(Eigen::VectorXf& targetPosition){
         leftWheelSpeed += std::max(std::min(distance_controlOutput, 3000.0), -3000.0);
         rightWheelSpeed += std::max(std::min(distance_controlOutput, 3000.0), -3000.0);
         
-        cout << "leftWheelSpeed: " << leftWheelSpeed << " rightWheelSpeed: " << rightWheelSpeed << endl;
+        //cout << "leftWheelSpeed: " << leftWheelSpeed << " rightWheelSpeed: " << rightWheelSpeed << endl;
 
         call_motors(leftWheelSpeed, rightWheelSpeed);
         leftWheelSpeed -= std::max(std::min(theta_controlOutput, 3000.0), -3000.0);

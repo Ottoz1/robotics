@@ -17,12 +17,15 @@ int positionUpdater(){
     MatrixXf line_segments = generate_lines();
     while(1){
         if(dataReady){
+            cout << "data ready" << endl;
             posO = get_odometry_pose();
             covO = get_odometry_cov();
 
             posC = posO;
             cart = polar_to_cart(points);
             cart = transform_points(cart, posO);    // Laser to world frame
+
+            plot(cart);
 
             transformation = cox_linefit(cart, line_segments, 100, &covC);
 

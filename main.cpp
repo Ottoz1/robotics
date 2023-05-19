@@ -43,32 +43,6 @@ int theta;
 
 float max_v;
 
-void vision_test()
-{
-    // Load the image
-    Mat image = imread("../img/3.jpg");
-    resize(image, image, Size(1280, 720));
-
-    // Set the HSV color bounds for the filter
-    Scalar lower = Scalar(41, 50, 0);
-    Scalar upper = Scalar(115, 255, 240);
-
-    // Process the image
-    vector<Point> box_contour;  // Biggest contour in the image (suppose to be the box)
-    vector<Point> number_contour;   // Biggest contour in the image within largest_contour (suppose to be the number)
-    vector<Point> inner_number_contour;   // Biggest contour in the image within number_contour (zero will have a large contour here, 1 will not)
-    int predicted_number;   // Predicted number on the box
-    float d;    // How "in the middle" the box is (0 is in the middle, 1 or -1 is on the edge)
-    process_image(image, lower, upper, &predicted_number, &box_contour, &number_contour, &inner_number_contour, &d);
-
-    // Print stuff
-    cout << "Predicted number: " << predicted_number << endl;
-    cout << "d: " << d << endl;
-
-    // Show the image with the contours and predicted number
-    visualize_results(image, box_contour, number_contour, inner_number_contour, predicted_number);
-}
-
 class InputParser{
     public:
         InputParser (int &argc, char **argv){
@@ -142,6 +116,7 @@ void kalman_test(){
     th1.join();
     th2.join();
 }
+/*
 
 void followBox(float d){
     int p1 = 3000;   // Forward speed P value
@@ -156,7 +131,8 @@ void followBox(float d){
  * Behaviour of robot
  * Default behaviour: 
  */
-void collectBoxes(){
+ /*
+int collectBoxes(){
 
     vector<float> initial_scan_pos = {1000, 1070, 0};
 
@@ -212,7 +188,6 @@ void collectBoxes(){
 
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
         for(int i = 0; i < identify.count(); i++){
-            if 
         }
 
     }
@@ -225,6 +200,7 @@ void collectBoxes(){
     //reverse
 
 }
+*/
 
 int main(int argc, char **argv){
     int p1 = 0;
@@ -266,7 +242,8 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    collectBoxes();
+    kalman_test();
+    //collectBoxes();
 
     lidarRunning = 0;
 
