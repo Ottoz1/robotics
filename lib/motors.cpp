@@ -188,7 +188,7 @@ void go_to(Eigen::VectorXf& targetPosition){
     double Kd_distance = 0;
     double Kd_theta = 0;
 
-    double tolerance = 30; //tolerance in mm
+    double tolerance = 50; //tolerance in mm
 
     double initial_theta_error = atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]) - currentPosition[2];
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();

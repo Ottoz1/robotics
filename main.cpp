@@ -95,6 +95,7 @@ void init_robot(){
     positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos[0], start_pos[1], dir);
     VectorXf start_pose(3);
     start_pose << start_pos[0], start_pos[1], start_pos[2];
+    cout << "start_pose: " << start_pose << endl;
     init_odometry(start_pose);
     initLidar();
 }
@@ -142,7 +143,7 @@ int collectBoxes(){
     initialScanPos << 1200, 1230, 0;
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
     VectorXf startPos = VectorXf::Zero(3);
-    startPos << (start_pos[0] + 200), start_pos[1], start_pos[2];
+    startPos << 600, 1200, M_PI;
     init_robot();
     thread th1(listenLidar);
     thread th2(positionUpdater);
@@ -163,6 +164,7 @@ int collectBoxes(){
         //
         //once a box is found with class 1, go to it
         // Get the image
+        chrono :: high_resolution_clock :: time_point start = chrono::high_resolution_clock::now();
         Mat image;
         cap >> image;
         resize(image, image, Size(640, 480));
@@ -180,6 +182,14 @@ int collectBoxes(){
         Mat results = visualize_results(image, boxes, identity);
         imshow("Results", results);
         waitKey(1);
+
+        chrono :: high_resolution_clock :: time_point end = chrono::high_resolution_clock::now();
+
+        cout << "Time process fram: " << chrono::duration_cast<chrono::duration<double>>(end - start).count() << endl;
+
+        //Mat results = visualize_results(image, boxes, identity);
+        //imshow("Results", results);
+        //waitKey(1);
 
 
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
@@ -204,7 +214,7 @@ int collectBoxes(){
         }
 
         //if no box is found, spin in place
-        call_motors(350, -350);
+        call_motors(250, -250);
 
         
 

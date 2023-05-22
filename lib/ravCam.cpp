@@ -1,4 +1,5 @@
 #include "ravCam.hpp"
+#include <chrono>
 
 void process_frame(Mat frame, Scalar lower, Scalar upper, vector<Rect>& boxes, vector<int>& identity_out) {
     // Generate mask
@@ -6,21 +7,37 @@ void process_frame(Mat frame, Scalar lower, Scalar upper, vector<Rect>& boxes, v
     cvtColor(frame, hsv, COLOR_BGR2HSV);
     Mat mask;
     Mat number_mask;
+
+    chrono :: high_resolution_clock :: time_point start_time = chrono::high_resolution_clock::now();
+
     generate_mask(hsv, lower, upper, &mask, &number_mask);
+
+    chrono :: high_resolution_clock :: time_point end_time = chrono::high_resolution_clock::now();
+
+    cout << "Time generate mask: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
     // Find contours based on mask
     vector<vector<Point>> contours;
     vector<Vec4i> hierarchy;
+
     findContours(mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
     // Extract the interesting bounding boxes
     vector<Rect> interesting_boxes;
     vector<vector<Point>> interesting_conts;
     vector<int> identity;
+
     extract_interesting_areas(contours, hierarchy, frame, mask, interesting_boxes, interesting_conts, identity);
 
     // Identify the numbers
+
+    start_time = chrono::high_resolution_clock::now();
+
     identity = identify_numbers(interesting_boxes, mask, number_mask, identity, frame);
+
+    end_time = chrono::high_resolution_clock::now();
+
+    cout << "Time identify numbers: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
     // Return the results
     boxes = interesting_boxes;
@@ -92,7 +109,7 @@ void generate_mask(Mat hsv, Scalar lower, Scalar upper, Mat* mask, Mat* number_m
     *number_mask = mask->clone();
 
     // Dilate and erode to blend the numbers together with the boxes
-    Mat kernel32 = getStructuringElement(MORPH_RECT, Size(40, 40));
+    Mat kernel32 = getStructuringElement(MORPH_RECT, Size(24, 24));
     dilate(*mask, *mask, kernel32, Point(-1, -1), 1);
     erode(*mask, *mask, kernel32, Point(-1, -1), 1);
 }
@@ -100,37 +117,58 @@ void generate_mask(Mat hsv, Scalar lower, Scalar upper, Mat* mask, Mat* number_m
 vector<int> identify_numbers(const vector<Rect>& boxes, const Mat& mask, const Mat& number_mask, const vector<int>& identity, const Mat& frame) {
     vector<int> updated_identity = identity;
 
+    chrono :: high_resolution_clock :: time_point start_time = chrono::high_resolution_clock::now();
     // Check if identity contains any -10
     if (find(identity.begin(), identity.end(), -10) == identity.end()) {
         return updated_identity;
-    }
+    }   
+    chrono :: high_resolution_clock :: time_point end_time = chrono::high_resolution_clock::now();
+    cout << "Time -10: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
+    start_time = chrono::high_resolution_clock::now();
     Mat masked; // The frame with the mask applied bitwise
     bitwise_and(frame, frame, masked, mask);
+    end_time = chrono::high_resolution_clock::now();
+    cout << "Time bitwise: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
+    start_time = chrono::high_resolution_clock::now();
     // Invert the number mask
     Mat inverted_number_mask;
     bitwise_not(number_mask, inverted_number_mask);
+    end_time = chrono::high_resolution_clock::now();
+    cout << "Time invert: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
+    start_time = chrono::high_resolution_clock::now();
     Mat masked2;
     bitwise_and(masked, masked, masked2, inverted_number_mask);
 
     masked = masked2;
+    end_time = chrono::high_resolution_clock::now();
+    cout << "Time bitwise2: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
+    start_time = chrono::high_resolution_clock::now();
     // Make all pixels that are not black white
     threshold(masked, masked, 1, 255, THRESH_BINARY);
+    end_time = chrono::high_resolution_clock::now();
+    cout << "Time threshold: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
+    start_time = chrono::high_resolution_clock::now();
     // Erode and dilate to remove accidental line detections
-    Mat kernel3 = getStructuringElement(MORPH_RECT, Size(3, 3));
-    erode(masked, masked, kernel3, Point(-1, -1), 2);
-    dilate(masked, masked, kernel3, Point(-1, -1), 2);
+    //Mat kernel3 = getStructuringElement(MORPH_RECT, Size(3, 3));
+    //erode(masked, masked, kernel3, Point(-1, -1), 2);
+    //dilate(masked, masked, kernel3, Point(-1, -1), 2);
+    end_time = chrono::high_resolution_clock::now();
+    cout << "Time erode: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
+    start_time = chrono::high_resolution_clock::now();
     // Find contours
     Mat masked_gray;
     cvtColor(masked, masked_gray, COLOR_BGR2GRAY);
     vector<vector<Point>> contours;
     vector<Vec4i> hierarchy;
     findContours(masked_gray, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    end_time = chrono::high_resolution_clock::now();
+    cout << "Time find contours: " << chrono::duration_cast<chrono::duration<double>>(end_time - start_time).count() << endl;
 
     // Loop through all boxes
     for (size_t i = 0; i < boxes.size(); i++) {

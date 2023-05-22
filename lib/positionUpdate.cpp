@@ -33,8 +33,6 @@ int positionUpdater(){
                 continue;
             }
 
-            cout << "Transformation: " << transformation << endl;
-
             cart = transform_points(cart, transformation);    // World to camera frame
             plot(cart);
 
@@ -46,8 +44,6 @@ int positionUpdater(){
             covK = kalman_combine_cov(covC, covO);
             
             cout << "posK: " << posK << endl;
-            cout << "posO: " << posO << endl;
-            cout << "posC: " << posC << endl;
 
             cout << "__________________________" << endl;
 
