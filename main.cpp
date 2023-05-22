@@ -34,6 +34,7 @@ vector<float> end_pos = {790, 480, M_PI/2};
 vector<float> r_wheel_vel;
 vector<float> l_wheel_vel;
 int dataReady = 0;
+int turning = 0;
 
 int x;
 int y;
@@ -94,7 +95,6 @@ void init_robot(){
     positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos[0], start_pos[1], dir);
     VectorXf start_pose(3);
     start_pose << start_pos[0], start_pos[1], start_pos[2];
-    init_motors();
     init_odometry(start_pose);
     initLidar();
 }
@@ -143,10 +143,11 @@ int collectBoxes(){
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
     VectorXf startPos = VectorXf::Zero(3);
     startPos << (start_pos[0] + 200), start_pos[1], start_pos[2];
-
+    cout << "before thread" << endl;
     init_robot();
     thread th1(listenLidar);
     thread th2(positionUpdater);
+    thread th3(init_motors);
 
     // Create a camera feed
     VideoCapture cap(0);
@@ -160,18 +161,8 @@ int collectBoxes(){
     //start by going forward 400mm in x direction
     go_to(initialScanPos);
 
-    //start main loop with default behaviour of spinning in place until a box is found with class 1
-    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     while(1){
         start:
-        // Calculate the elapsed time
-        chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
-        chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
-
-        // Check if 10ms have passed
-        if (elapsedTime.count() < 0.01){
-            continue;
-        }
         //
         //once a box is found with class 1, go to it
         // Get the image

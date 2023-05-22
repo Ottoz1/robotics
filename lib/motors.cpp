@@ -2,6 +2,7 @@
 #include "units.hpp"
 #include "odometry.hpp"
 #include "pid.hpp"
+#include <chrono>
 
 MotorDataType MotorData;
 static const int SPI_Channel = 1;
@@ -12,6 +13,8 @@ static const int SPI_Channel = 1;
 // Create variables for the encoder values as singed int 32 
 int l_encoder;
 int r_encoder;
+int l_speed;            // Left motor speed
+int r_speed;            // Right motor speed
 int encoders_have_value;
 
 int encoders_ready;
@@ -20,48 +23,67 @@ float dD;
 float dT;
 
 void init_motors(){
+    l_speed = 0;
+    r_speed = 0;
+    turning = 0;
     wiringPiSetup(); 
 	wiringPiSPISetup(SPI_Channel, 1000000);
     encoders_ready = 0;
     encoders_have_value = 0;
     dD = 0;
     dT = 0;
-}
 
-void call_motors(int l_speed, int r_speed){
-    encoders_ready = 0; // Reset the encoders ready flag
+    chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+    while(1){
+        // Calculate the elapsed time
+        chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
+        // Check if 10ms have passed
+        if (elapsedTime.count() < 0.01){
+            continue;
+        }
+        encoders_ready = 0; // Reset the encoders ready flag
 
-    // Set the motor data
-    MotorData.Set_Speed_M1 = -l_speed;
-    MotorData.Set_Speed_M2 = -r_speed;
+        // Set the motor data
+        MotorData.Set_Speed_M1 = -l_speed;
+        MotorData.Set_Speed_M2 = -r_speed;
 
-    // Send the motor data to the motors
-    Send_Read_Motor_Data(&MotorData);
+        //cout << "l_speed: " << l_speed << " r_speed: " << r_speed << endl;
 
-    // Get the new encoder values
-    int new_l_encoder = MotorData.Encoder_M1;
-    int new_r_encoder = MotorData.Encoder_M2;
+        // Send the motor data to the motors
+        Send_Read_Motor_Data(&MotorData);
 
-    // Check if the encoder have value
-    if(!encoders_have_value){
+        // Get the new encoder values
+        int new_l_encoder = MotorData.Encoder_M1;
+        int new_r_encoder = MotorData.Encoder_M2;
+
+        // Check if the encoder have value
+        if(!encoders_have_value){
+            l_encoder = new_l_encoder;
+            r_encoder = new_r_encoder;
+            encoders_have_value = 1;
+        }
+
+        // Calculate the change in distance and angle based on the new encoder values
+        float ddr = (float)(new_r_encoder - r_encoder) * MM_PER_COUNT;
+        float ddl = (float)(new_l_encoder - l_encoder) * MM_PER_COUNT;
+
+        dD = (ddr + ddl) / 2.0 * -1;    // -1 since the encoder values are negative when the robot moves forward
+        dT = -(ddr - ddl) / WHEEL_BASE;
+
+        // Update the encoder values
         l_encoder = new_l_encoder;
         r_encoder = new_r_encoder;
-        encoders_have_value = 1;
+
+        encoders_ready = 1;
+        update_odometry_pose();
     }
+}
 
-    // Calculate the change in distance and angle based on the new encoder values
-    float ddr = (float)(new_r_encoder - r_encoder) * MM_PER_COUNT;
-    float ddl = (float)(new_l_encoder - l_encoder) * MM_PER_COUNT;
-
-    dD = (ddr + ddl) / 2.0 * -1;    // -1 since the encoder values are negative when the robot moves forward
-    dT = -(ddr - ddl) / WHEEL_BASE;
-
-    // Update the encoder values
-    l_encoder = new_l_encoder;
-    r_encoder = new_r_encoder;
-
-    encoders_ready = 1;
-    update_odometry_pose();
+void call_motors(int left_speed, int right_speed){
+    cout << "calling motors" << endl;
+    l_speed = left_speed;
+    r_speed = right_speed;
 }
 
 
@@ -97,6 +119,7 @@ void stop_motors(){
 }
 
 void turn(Eigen::VectorXf& targetPosition){
+    turning = 1;
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
     Eigen::VectorXf error = targetPosition - currentPosition;
     float theta_integral = 0.0;
@@ -148,6 +171,7 @@ void turn(Eigen::VectorXf& targetPosition){
     }
 
     stop_motors();
+    turning = 0;
 }
 
 void go_to(Eigen::VectorXf& targetPosition){

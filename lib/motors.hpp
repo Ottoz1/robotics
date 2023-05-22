@@ -12,6 +12,7 @@ extern "C" {
 // Motor 2 = right   
 
 extern int encoders_ready;     // Flag to indicate if encoders are ready
+extern int turning;            // Flag to indicate if the robot is turning
 
 void call_motors(int l_speed, int r_speed);
 void init_motors();

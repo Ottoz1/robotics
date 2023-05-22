@@ -1,5 +1,6 @@
 #include "positionUpdate.hpp"
 #include "writeToFile.hpp"
+#include "motors.hpp"
 using namespace std;
 using namespace Eigen;
 
