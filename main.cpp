@@ -36,6 +36,8 @@ vector<float> l_wheel_vel;
 int dataReady = 0;
 int turning = 0;
 
+int blocks_taken = 0;
+
 int x;
 int y;
 int xs;
@@ -124,7 +126,7 @@ void kalman_test(){
 void followBox(float d){
     cout << "Following box" << endl;
     int p1 = 3000;   // Forward speed P value
-    int p2 = 350;   // Turning speed P value
+    int p2 = 400;   // Turning speed P value
     int left_speed = d*p2;
     int right_speed = -d*p2;
     p1 = 3000 - abs(d)*p1;
@@ -149,6 +151,8 @@ int collectBoxes(){
     thread th2(positionUpdater);
     thread th3(init_motors);
 
+    start:
+
     // Create a camera feed
     VideoCapture cap(0);
     if (!cap.isOpened()){
@@ -159,8 +163,13 @@ int collectBoxes(){
     //start by going forward 400mm in x direction
     go_to(initialScanPos);
 
+    // Set the HSV color bounds for the filter
+    Scalar lower = Scalar(70, 42, 0);
+    Scalar upper = Scalar(139, 255, 255);
+
     while(1){
-        start:
+
+        whileLoop:
         //
         //once a box is found with class 1, go to it
         // Get the image
@@ -169,10 +178,6 @@ int collectBoxes(){
         cap >> image;
         resize(image, image, Size(640, 480));
         rotate(image, image, ROTATE_180);   // Rotate the image 180 degrees
-
-        // Set the HSV color bounds for the filter
-        Scalar lower = Scalar(70, 42, 0);
-        Scalar upper = Scalar(139, 255, 255);
 
         // Process the frame
         vector<Rect> boxes;
@@ -195,13 +200,24 @@ int collectBoxes(){
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
         for(int i = 0; i < identity.size(); i++){
             if(identity[i] == -4){
-                if(boxes[i].area() > 10000){
-                    //if the area is large, go home
+                if(blocks_taken == 1)
+                {
+                    VectorXf temp_point = VectorXf::Zero(3);
+                    temp_point << startPos(0)-300, startPos(1), startPos(2);
+                    go_forward(200);
+                    blocks_taken++;
                     go_to(startPos);
+                    // Turn towards temp_point 
+                    go_to(temp_point);
                     goto exit;
                 }
-                else{
-                    //if the area is small, continue collecting boxes
+
+                if(blocks_taken == 0){
+                    cv::destroyAllWindows();
+                    go_forward(200);
+                    go_to(initialScanPos);
+                    blocks_taken++;
+                    goto start;
                 }
             }
             if(identity[i] == 1){
@@ -209,7 +225,7 @@ int collectBoxes(){
                 float d = find_d(image, boxes[i]);
                 cout << "d: " << d << endl;
                 followBox(d);
-                goto start;
+                goto whileLoop;
             }
         }
 

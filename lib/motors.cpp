@@ -128,7 +128,7 @@ void turn(Eigen::VectorXf& targetPosition){
     float Ki_theta = 0;
     float Kd_theta = 0;
 
-    float tolerance = 0.1; //tolerance in radians
+    float tolerance = 0.05; //tolerance in radians
     double theta_error = atan2(error[1], error[0]) - currentPosition[2];
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     while (abs(theta_error) > tolerance){
@@ -158,8 +158,8 @@ void turn(Eigen::VectorXf& targetPosition){
         double theta_controlOutput = calculatePID(theta_error, theta_integral, prev_theta_error, Kp_theta, Ki_theta, Kd_theta);
 
         // Adjust motor speeds based on control output
-        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 250.0), -250.0);
-        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 250.0), -250.0);
+        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 350.0), -350.0);
+        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 350.0), -350.0);
 
         cout << "leftWheelSpeed: " << leftWheelSpeed << " rightWheelSpeed: " << rightWheelSpeed << endl;
 
@@ -171,6 +171,14 @@ void turn(Eigen::VectorXf& targetPosition){
 
     stop_motors();
     turning = 0;
+}
+
+void go_forward(int distanceMM){
+    Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
+    Eigen::VectorXf targetPosition = currentPosition;
+    targetPosition[0] += distanceMM * cos(currentPosition[2]);
+    targetPosition[1] += distanceMM * sin(currentPosition[2]);
+    go_to(targetPosition);
 }
 
 void go_to(Eigen::VectorXf& targetPosition){
@@ -188,7 +196,7 @@ void go_to(Eigen::VectorXf& targetPosition){
     double Kd_distance = 0;
     double Kd_theta = 0;
 
-    double tolerance = 50; //tolerance in mm
+    double tolerance = 70; //tolerance in mm
 
     double initial_theta_error = atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]) - currentPosition[2];
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();

@@ -71,7 +71,11 @@ void extract_interesting_areas(vector<vector<Point>>& conts, vector<Vec4i>& hier
         if (x == 0 || y == 0 || x + w == frame.cols || y + h == frame.rows) {
             // Check if the bounding rectangle is touching the underside of the frame
             if (y + h == frame.rows) {
-                identity.push_back(-4);  // -4 means taken
+                if (h < 100)
+                    identity.push_back(-5);  // -5 means taken 1 block
+                else
+                    identity.push_back(-4);  // -4 means taken
+                cout << "h: " << h << endl;
                 continue;
             }
             else
@@ -102,9 +106,9 @@ void generate_mask(Mat hsv, Scalar lower, Scalar upper, Mat* mask, Mat* number_m
     inRange(hsv, lower, upper, *mask);
 
     // Erode and dilate to remove accidental line detections
-    Mat kernel3 = getStructuringElement(MORPH_RECT, Size(3, 3));
-    erode(*mask, *mask, kernel3, Point(-1, -1), 2);
-    dilate(*mask, *mask, kernel3, Point(-1, -1), 2);
+    //Mat kernel3 = getStructuringElement(MORPH_RECT, Size(3, 3));
+    //erode(*mask, *mask, kernel3, Point(-1, -1), 2);
+    //dilate(*mask, *mask, kernel3, Point(-1, -1), 2);
 
     *number_mask = mask->clone();
 

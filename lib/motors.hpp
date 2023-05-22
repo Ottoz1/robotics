@@ -29,4 +29,5 @@ int get_r_motorSpeed();
 
 void stop_motors();
 void go_to(Eigen::VectorXf& targetPosition);
+void go_forward(int distanceMM);
 void turn(float theta);
