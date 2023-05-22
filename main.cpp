@@ -143,7 +143,6 @@ int collectBoxes(){
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
     VectorXf startPos = VectorXf::Zero(3);
     startPos << (start_pos[0] + 200), start_pos[1], start_pos[2];
-    cout << "before thread" << endl;
     init_robot();
     thread th1(listenLidar);
     thread th2(positionUpdater);
@@ -155,8 +154,6 @@ int collectBoxes(){
         cout << "Error opening video stream" << endl;
         return -1;
     }
-
-    init_motors();
 
     //start by going forward 400mm in x direction
     go_to(initialScanPos);
@@ -179,6 +176,10 @@ int collectBoxes(){
         vector<Rect> boxes;
         vector<int> identity;
         process_frame(image, lower, upper, boxes, identity);
+
+        Mat results = visualize_results(image, boxes, identity);
+        imshow("Results", results);
+        waitKey(1);
 
 
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)

@@ -81,7 +81,6 @@ void init_motors(){
 }
 
 void call_motors(int left_speed, int right_speed){
-    cout << "calling motors" << endl;
     l_speed = left_speed;
     r_speed = right_speed;
 }
@@ -159,8 +158,8 @@ void turn(Eigen::VectorXf& targetPosition){
         double theta_controlOutput = calculatePID(theta_error, theta_integral, prev_theta_error, Kp_theta, Ki_theta, Kd_theta);
 
         // Adjust motor speeds based on control output
-        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 350.0), -350.0);
-        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 350.0), -350.0);
+        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 250.0), -250.0);
+        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 250.0), -250.0);
 
         cout << "leftWheelSpeed: " << leftWheelSpeed << " rightWheelSpeed: " << rightWheelSpeed << endl;
 
