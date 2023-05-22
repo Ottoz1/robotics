@@ -119,10 +119,11 @@ void kalman_test(){
     th1.join();
     th2.join();
 }
-/**/
+
 void followBox(float d){
+    cout << "Following box" << endl;
     int p1 = 3000;   // Forward speed P value
-    int p2 = 250;   // Turning speed P value
+    int p2 = 350;   // Turning speed P value
     int left_speed = d*p2;
     int right_speed = -d*p2;
     p1 = 3000 - abs(d)*p1;
@@ -134,11 +135,11 @@ void followBox(float d){
  * Behaviour of robot
  * Default behaviour: 
  */
- /*
+ 
 int collectBoxes(){
 
     Eigen::VectorXf initialScanPos = VectorXf::Zero(3);
-    initialScanPos << 1200, 1070, 0;
+    initialScanPos << 1200, 1230, 0;
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
     VectorXf startPos = VectorXf::Zero(3);
     startPos << (start_pos[0] + 200), start_pos[1], start_pos[2];
@@ -162,6 +163,7 @@ int collectBoxes(){
     //start main loop with default behaviour of spinning in place until a box is found with class 1
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     while(1){
+        start:
         // Calculate the elapsed time
         chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
         chrono::duration<double> elapsedTime = chrono::duration_cast<chrono::duration<double>>(currentTime - start);
@@ -187,14 +189,9 @@ int collectBoxes(){
         vector<int> identity;
         process_frame(image, lower, upper, boxes, identity);
 
-        // Visualize the results
-        Mat result = visualize_results(image, boxes, identity);
-        imshow("Image", result);
-        waitKey(25);
-
 
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
-        for(int i = 0; i < identify.count(); i++){
+        for(int i = 0; i < identity.size(); i++){
             if(identity[i] == -4){
                 if(boxes[i].area() > 10000){
                     //if the area is large, go home
@@ -206,15 +203,18 @@ int collectBoxes(){
                 }
             }
             if(identity[i] == 1){
+
                 float d = find_d(image, boxes[i]);
+                cout << "d: " << d << endl;
                 followBox(d);
+                goto start;
             }
         }
 
         //if no box is found, spin in place
-        if(boxes.size() == 0){
-            call_motors(250, -250);
-        }
+        call_motors(350, -350);
+
+        
 
     }
 
@@ -223,7 +223,7 @@ int collectBoxes(){
     th1.join();
     th2.join();
 
-    return;
+    return 1;
 
 
 
@@ -234,7 +234,6 @@ int collectBoxes(){
     //reverse
 
 }
-*/
 
 
 int main(int argc, char **argv){
@@ -277,8 +276,8 @@ int main(int argc, char **argv){
         return 0;
     }
 
-    kalman_test();
-    //collectBoxes();
+    //kalman_test();
+    collectBoxes();
 
     lidarRunning = 0;
 
