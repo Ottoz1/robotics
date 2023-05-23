@@ -31,6 +31,8 @@ Scalar lower_purple = Scalar(132, 72, 0);
 Scalar upper_purple = Scalar(161, 255, 255);
 Scalar lower_yellow = Scalar(20, 93, 0);
 Scalar upper_yellow = Scalar(30, 255, 255);
+Scalar lower_darkBlue = Scalar(108, 118, 0);
+Scalar upper_darkBlue = Scalar(116, 230, 255);
 
 int new_pos_ready = 0;
 int lidarRunning = 1;
@@ -189,7 +191,7 @@ int collectBoxes(){
         // Process the frame
         vector<Rect> boxes;
         vector<int> identity;
-        process_frame(image, lower, upper, boxes, identity, lower_purple, upper_purple, lower_yellow, upper_yellow);
+        process_frame(image, lower, upper, boxes, identity, lower_purple, upper_purple, lower_yellow, upper_yellow, lower_darkBlue, upper_darkBlue);
 
         Mat results = visualize_results(image, boxes, identity);
         imshow("Results", results);

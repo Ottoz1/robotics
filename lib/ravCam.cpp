@@ -121,7 +121,7 @@ void extract_interesting_areas(vector<vector<Point>>& conts, vector<Vec4i>& hier
         if (x == 0 || y == 0 || x + w == frame.cols || y + h == frame.rows) {
             // Check if the bounding rectangle is touching the underside of the frame
             if (y + h == frame.rows && w*h > 1000) {
-                if (h < 100)
+                if (h < 150)
                     identity.push_back(-5);  // -5 means taken 1 block
                 else
                     identity.push_back(-4);  // -4 means taken
