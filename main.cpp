@@ -213,7 +213,7 @@ int collectBoxes(){
                 {
                     VectorXf temp_point = VectorXf::Zero(3);
                     temp_point << startPos(0)-300, startPos(1), startPos(2);
-                    go_forward(200);
+                    go_forward(230);
                     blocks_taken++;
                     go_to(startPos);
                     // Turn towards temp_point 
