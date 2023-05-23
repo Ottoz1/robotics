@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <math.h>
+#include "motors.hpp"
 #include "ravLidar.hpp"
 #include "cox.hpp"
 

@@ -22,6 +22,16 @@ using namespace cv;
 
 VectorXf pose(3);
 
+// Define the color range
+Scalar lower = Scalar(88, 73, 0);
+Scalar upper = Scalar(107, 255, 255);
+
+// Define obstacle color range
+Scalar lower_purple = Scalar(132, 72, 0);
+Scalar upper_purple = Scalar(161, 255, 255);
+Scalar lower_yellow = Scalar(20, 93, 0);
+Scalar upper_yellow = Scalar(30, 255, 255);
+
 int new_pos_ready = 0;
 int lidarRunning = 1;
 MatrixXf points = MatrixXf::Zero(200,2);
@@ -163,9 +173,6 @@ int collectBoxes(){
     //start by going forward 400mm in x direction
     go_to(initialScanPos);
 
-    // Set the HSV color bounds for the filter
-    Scalar lower = Scalar(70, 42, 0);
-    Scalar upper = Scalar(139, 255, 255);
 
     while(1){
 
@@ -182,7 +189,7 @@ int collectBoxes(){
         // Process the frame
         vector<Rect> boxes;
         vector<int> identity;
-        process_frame(image, lower, upper, boxes, identity);
+        process_frame(image, lower, upper, boxes, identity, lower_purple, upper_purple, lower_yellow, upper_yellow);
 
         Mat results = visualize_results(image, boxes, identity);
         imshow("Results", results);

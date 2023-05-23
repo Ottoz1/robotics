@@ -12,3 +12,4 @@ void extract_interesting_areas(vector<vector<Point>>& conts, vector<Vec4i>& hier
 vector<int> identify_numbers(const vector<Rect>& boxes, const Mat& mask, const Mat& number_mask, const vector<int>& identity, const Mat& frame);
 Mat visualize_results(Mat frame, vector<Rect> boxes, vector<int> identity);
 void detect_others(Mat frame, Scalar lower_purple, Scalar upper_purple, Scalar lower_yellow, Scalar upper_yellow, vector<Rect>& boxes, vector<int>& identity_out);
+float find_d(Mat img, Rect box);

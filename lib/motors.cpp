@@ -129,7 +129,7 @@ void turn(Eigen::VectorXf& targetPosition){
     float Kd_theta = 0;
 
     float tolerance = 0.05; //tolerance in radians
-    double theta_error = atan2(error[1], error[0]) - currentPosition[2];
+    double theta_error = (atan2(error[1], error[0]) + M_PI) - currentPosition[2];
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     while (abs(theta_error) > tolerance){
         chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
@@ -145,8 +145,9 @@ void turn(Eigen::VectorXf& targetPosition){
 
         currentPosition = get_odometry_pose();  // Update current position
         error = targetPosition - currentPosition;
-        theta_error = atan2(error[1], error[0]) - currentPosition[2];
+        theta_error = (atan2(error[1], error[0]) + M_PI) - currentPosition[2];
         //theta_error = normalizeAngle(theta_error);
+        theta_error += M_PI; //convert from interval [-pi, pi] to [0, 2pi]
 
         cout << "currentPosition: " << currentPosition << endl;
         cout << "angle: " << (currentPosition[2]*180)/M_PI << endl;
@@ -198,7 +199,7 @@ void go_to(Eigen::VectorXf& targetPosition){
 
     double tolerance = 70; //tolerance in mm
 
-    double initial_theta_error = atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]) - currentPosition[2];
+    double initial_theta_error = (atan2(targetPosition[1] - currentPosition[1], targetPosition[0] - currentPosition[0]) + M_PI) - currentPosition[2];
     chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     while ((targetPosition - currentPosition).norm() > tolerance){
         chrono::high_resolution_clock::time_point currentTime = chrono::high_resolution_clock::now();
@@ -215,7 +216,7 @@ void go_to(Eigen::VectorXf& targetPosition){
         currentPosition = get_odometry_pose();  // Update current position
         Eigen::VectorXf error = targetPosition - currentPosition;
         double distance_error = error.head<2>().norm();  // Distance error
-        double theta_error = atan2(error[1], error[0]) - currentPosition[2];  // Angle error
+        double theta_error = (atan2(error[1], error[0]) + M_PI) - currentPosition[2];  // Angle error
         //theta_error = normalizeAngle(theta_error);
 
         //cout << "currentPosition: " << currentPosition << endl;
