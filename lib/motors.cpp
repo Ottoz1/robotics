@@ -168,8 +168,8 @@ void turn(Eigen::VectorXf& targetPosition){
         // P controller as in PID with Ki and Kd = 0
         double theta_controlOutput = calculatePID(theta_error, theta_integral, prev_theta_error, Kp_theta, Ki_theta, Kd_theta);
 
-        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 350.0), -350.0);
-        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 350.0), -350.0);
+        double leftWheelSpeed = std::max(std::min(-theta_controlOutput, 1500.0), -1500.0);
+        double rightWheelSpeed = std::max(std::min(theta_controlOutput, 1500.0), -1500.0);
 
         cout << "leftWheelSpeed: " << leftWheelSpeed << " rightWheelSpeed: " << rightWheelSpeed << endl;
 

@@ -129,7 +129,7 @@ void extract_interesting_areas(vector<vector<Point>>& conts, vector<Vec4i>& hier
             }
             else
             {
-                identity.push_back(-3);  // -3 means cropped
+                identity.push_back(-10);  // -3 means cropped
                 continue;
             }
         }

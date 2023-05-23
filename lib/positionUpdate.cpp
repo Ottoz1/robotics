@@ -17,7 +17,7 @@ int positionUpdater(){
     VectorXf transformation;
     MatrixXf line_segments = generate_lines();
     while(1){
-        if(dataReady){
+        if(dataReady && !turning){
             posO = get_odometry_pose();
             covO = get_odometry_cov();
 
@@ -25,7 +25,13 @@ int positionUpdater(){
             cart = polar_to_cart(points);
             cart = transform_points(cart, posO);    // Laser to world frame
 
-            transformation = cox_linefit(cart, line_segments, 10, &covC);
+            transformation = cox_linefit(cart, line_segments, 20, &covC);
+
+            // Check if transformation is nan
+            if(transformation(0) != transformation(0) || transformation(1) != transformation(1) || transformation(2) != transformation(2)){
+                dataReady=0;
+                continue;
+            }
 
             // Check if transformation is -1000000, -1000000, -1000000
             if(transformation(0) == -1000000 && transformation(1) == -1000000 && transformation(2) == -1000000){
