@@ -3,7 +3,7 @@
 
 Mat numMask;
 
-void process_frame(Mat frame, Scalar lower, Scalar upper, vector<Rect>& boxes, vector<int>& identity_out, Scalar lower_purple, Scalar upper_purple, Scalar lower_yellow, Scalar upper_yellow){
+void process_frame(Mat frame, Scalar lower, Scalar upper, vector<Rect>& boxes, vector<int>& identity_out, Scalar lower_purple, Scalar upper_purple, Scalar lower_yellow, Scalar upper_yellow, Scalar lower_darkBlue, Scalar upper_darkBlue){
     numMask = Mat::zeros(frame.size(), CV_8UC3);
     // Generate mask
     Mat hsv;
@@ -30,29 +30,34 @@ void process_frame(Mat frame, Scalar lower, Scalar upper, vector<Rect>& boxes, v
     identity = identify_numbers(interesting_boxes, mask, number_mask, identity, frame);
 
     // Detect other obstacles
-    detect_others(hsv, lower_purple, upper_purple, lower_yellow, upper_yellow, interesting_boxes, identity);
+    detect_others(hsv, lower_purple, upper_purple, lower_yellow, upper_yellow, lower_darkBlue, upper_darkBlue, interesting_boxes, identity);
 
     // Return the results
     boxes = interesting_boxes;
     identity_out = identity;
 }
 
-void detect_others(Mat hsv, Scalar lower_purple, Scalar upper_purple, Scalar lower_yellow, Scalar upper_yellow, vector<Rect>& boxes, vector<int>& identity_out){
+void detect_others(Mat hsv, Scalar lower_purple, Scalar upper_purple, Scalar lower_yellow, Scalar upper_yellow, Scalar lower_darkBlue, Scalar upper_darkBlue, vector<Rect>& boxes, vector<int>& identity_out){
     // Generate mask
     Mat mask_purple;
     Mat mask_yellow;
+    Mat mask_darkBlue;
 
     inRange(hsv, lower_purple, upper_purple, mask_purple);
     inRange(hsv, lower_yellow, upper_yellow, mask_yellow);
+    inRange(hsv, lower_darkBlue, upper_darkBlue, mask_darkBlue);
 
     // Find contours based on mask
     vector<vector<Point>> contours_purple;
     vector<Vec4i> hierarchy_purple;
     vector<vector<Point>> contours_yellow;
     vector<Vec4i> hierarchy_yellow;
+    vector<vector<Point>> contours_darkBlue;
+    vector<Vec4i> hierarchy_darkBlue;
 
     findContours(mask_purple, contours_purple, hierarchy_purple, RETR_TREE, CHAIN_APPROX_SIMPLE);
     findContours(mask_yellow, contours_yellow, hierarchy_yellow, RETR_TREE, CHAIN_APPROX_SIMPLE);
+    findContours(mask_darkBlue, contours_darkBlue, hierarchy_darkBlue, RETR_TREE, CHAIN_APPROX_SIMPLE);
 
     // Create bounding boxes around the contours that are bigger than a certain size and add them to boxes with identity -6
     int thresh = 1000;
@@ -67,6 +72,15 @@ void detect_others(Mat hsv, Scalar lower_purple, Scalar upper_purple, Scalar low
     }
     for (size_t i = 0; i < contours_yellow.size(); i++) {
         vector<Point>& cont = contours_yellow[i];
+        Rect bb = boundingRect(cont);
+
+        if (bb.width * bb.height > thresh) {
+            boxes.push_back(bb);
+            identity_out.push_back(-6);
+        }
+    }
+    for (size_t i = 0; i < contours_darkBlue.size(); i++) {
+        vector<Point>& cont = contours_darkBlue[i];
         Rect bb = boundingRect(cont);
 
         if (bb.width * bb.height > thresh) {
@@ -142,11 +156,6 @@ void generate_mask(Mat hsv, Scalar lower, Scalar upper, Mat* mask, Mat* number_m
     Mat hsv_resized;
     resize(hsv, hsv_resized, Size(320, 240));
     inRange(hsv_resized, lower, upper, *mask);
-
-    // Erode and dilate to remove accidental line detections
-    //Mat kernel3 = getStructuringElement(MORPH_RECT, Size(3, 3));
-    //erode(*mask, *mask, kernel3, Point(-1, -1), 2);
-    //dilate(*mask, *mask, kernel3, Point(-1, -1), 2);
 
     *number_mask = mask->clone();
 
