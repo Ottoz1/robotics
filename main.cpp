@@ -4,7 +4,6 @@
 #include "lib/ravLidar.hpp"
 #include "lib/odometry.hpp"
 #include "lib/positionUpdate.hpp"
-#include "lib/speedProfile.hpp"
 #include "odometry.hpp"
 #include "pid.hpp"
 #include <time.h>
@@ -48,7 +47,10 @@ vector<float> l_wheel_vel;
 int dataReady = 0;
 int turning = 0;
 
+//logic for robot
 int blocks_taken = 0;
+Eigen::VectorXf wayPoint = VectorXf::Zero(3);
+Eigen::VectorXf scoutPos = VectorXf::Zero(3);
 
 int x;
 int y;
@@ -96,27 +98,11 @@ void init_robot(){
     start_pos[1] = ys;
     start_pos[2] = theta;
     
-    speedProfile sp(max_vel, dt, acceleration, start_pos, end_pos, dir);
-    sp.run();
-    wheelVelocities = sp.getWheelVelocities();
-    
-    for(int i = 0; i < wheelVelocities.size(); i++){
-        r_wheel_vel.push_back(wheelVelocities[i][0]);
-        l_wheel_vel.push_back(wheelVelocities[i][1]);
-        cout << "i: " << i << " r: " << r_wheel_vel[i] << " l: " << l_wheel_vel[i] << endl;
-    }
-
-    positions_s = sp.forwardKinematics(r_wheel_vel, l_wheel_vel, WHEEL_RADIUS, start_pos[0], start_pos[1], dir);
     VectorXf start_pose(3);
     start_pose << start_pos[0], start_pos[1], start_pos[2];
     cout << "start_pose: " << start_pose << endl;
     init_odometry(start_pose);
     initLidar();
-}
-
-float errorTheta(VectorXf actual, vector<float> expected){
-    float error = actual(2) - expected[2];
-    return error;
 }
 
 void kalman_test(){
@@ -152,16 +138,23 @@ void followBox(float d){
  */
  
 int collectBoxes(){
+    chrono :: high_resolution_clock :: time_point start = chrono::high_resolution_clock::now();
 
-    Eigen::VectorXf initialScanPos = VectorXf::Zero(3);
-    initialScanPos << 1200, 1230, 0;
     Eigen::VectorXf currentPosition = get_odometry_pose();  // Get current position x, y, theta
-    VectorXf startPos = VectorXf::Zero(3);
-    startPos << 600, 1200, M_PI;
+    VectorXf home = VectorXf::Zero(3);
+    home << 250, 1200, M_PI;
+    VectorXf befHome = VectorXf::Zero(3);
+    befHome << 600, 1200, M_PI;
+    VectorXf befBefHome = VectorXf::Zero(3);
+    befBefHome << 780, 780, 0;
     init_robot();
     thread th1(listenLidar);
     thread th2(positionUpdater);
     thread th3(init_motors);
+
+    //start by going forward 400mm in x direction
+    go_to(wayPoint);
+    go_to(scoutPos);
 
     start:
 
@@ -171,10 +164,6 @@ int collectBoxes(){
         cout << "Error opening video stream" << endl;
         return -1;
     }
-
-    //start by going forward 400mm in x direction
-    go_to(initialScanPos);
-
 
     while(1){
 
@@ -208,23 +197,22 @@ int collectBoxes(){
 
         //once a box is found with class -4 (box is collected) evaluate if the area of this box is large (indicating that two out of two boxes are collected)
         for(int i = 0; i < identity.size(); i++){
-            if(identity[i] == -4){
+            if(identity[i] == -4 && abs(find_d(image, boxes[i])) < 0.3){
                 if(blocks_taken == 1)
                 {
-                    VectorXf temp_point = VectorXf::Zero(3);
-                    temp_point << startPos(0)-300, startPos(1), startPos(2);
                     go_forward(230);
                     blocks_taken++;
-                    go_to(startPos);
                     // Turn towards temp_point 
-                    go_to(temp_point);
+                    go_to(befBefHome);
+                    go_to(befHome);
+                    go_to(home);
                     goto exit;
                 }
 
                 if(blocks_taken == 0){
                     cv::destroyAllWindows();
-                    go_forward(200);
-                    go_to(initialScanPos);
+                    go_forward(230);
+                    go_to(scoutPos);
                     blocks_taken++;
                     goto start;
                 }
@@ -236,6 +224,13 @@ int collectBoxes(){
                 followBox(d);
                 goto whileLoop;
             }
+            if(identity[i] == -5){
+                blocks_taken = 1;
+            }
+            if(identity[i] == 0){
+                call_motors(250, -250);
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            }
         }
 
         //if no box is found, spin in place
@@ -246,6 +241,12 @@ int collectBoxes(){
     }
 
     exit:
+
+    chrono :: high_resolution_clock :: time_point stop = chrono::high_resolution_clock::now();
+    while(1){
+        cout << "Time in seconds: " << chrono::duration_cast<chrono::duration<double>>(stop - start).count() << endl;
+    }
+    
 
     th1.join();
     th2.join();
@@ -290,8 +291,39 @@ int main(int argc, char **argv){
     if(input.cmdOptionExists("-theta")){
         theta = stof(input.getCmdOption("-theta"));
     }
+    if(input.cmdOptionExists("-wp")){
+        int wp = stoi(input.getCmdOption("-wp"));
+        if(wp == 0){
+            wayPoint << 780, 1640, 0;
+        }
+        else if(wp == 1){
+            wayPoint << 780, 1200, 0;
+        }
+        else if(wp == 2){
+            wayPoint << 780, 780, 0;
+        }
+        else{
+            wayPoint << 780, 1200, 0;
+        }
+
+    }
+    if(input.cmdOptionExists("-sp")){
+        int sp = stof(input.getCmdOption("-sp"));
+        if(sp == 0){
+            scoutPos << 1200, 1200, 0;
+        }
+        else if(sp == 1){
+            scoutPos << 1900, 1200, 0;
+        }
+        else if(sp == 2){
+            scoutPos << 2400, 1200, 0;
+        }
+        else{
+            scoutPos << 1200, 1200, 0;
+        }
+    }
     if(input.cmdOptionExists("-h")){
-        cout << "Usage: ./main [-p1 <p1>] [-p2 <p2>] [-x <x>] [-y <y>] [-xs <xs>] [-ys <ys>] [-theta <theta>] [-h]" << endl;
+        cout << "Usage: ./main [-p1 <p1>] [-p2 <p2>] [-x <x>] [-y <y>] [-xs <xs>] [-ys <ys>] [-theta <theta>] [-wp <waypoint>] [-sp <scoutpos>] [-h]" << endl;
         cout << "p1: P value for forward speed" << endl;
         cout << "p2: P value for turning speed" << endl;
         cout << "x: x coordinate of end position" << endl;
@@ -299,6 +331,8 @@ int main(int argc, char **argv){
         cout << "xs: x coordinate of start position" << endl;
         cout << "ys: y coordinate of start position" << endl;
         cout << "theta: theta coordinate of start position" << endl;
+        cout << "wp: waypoint to go to" << endl;
+        cout << "sp: scout position" << endl;
         cout << "h: help" << endl;
         return 0;
     }
