@@ -231,12 +231,20 @@ int collectBoxes(){
                 call_motors(250, -250);
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
+            else if(identity[i] == 0 && blocks_taken == 1){
+                call_motors(-250, 250);
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            }
         }
 
         //if no box is found, spin in place
-        call_motors(250, -250);
 
-        
+        if(blocks_taken == 1){
+            call_motors(-250, 250);
+        }
+        else{
+            call_motors(250, -250);
+        }
 
     }
 
