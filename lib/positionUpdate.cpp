@@ -56,6 +56,9 @@ int positionUpdater(){
             set_odometry_pose(posK);
             set_odometry_cov(covK);
 
+            append_cox(posC, covC);
+            append_kalman(posK, covK);
+
             dataReady=0;
         }
     }

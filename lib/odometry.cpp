@@ -55,7 +55,7 @@ void update_odometry_pose(){
     cov_odometry = Aj * old_cov * Aj.transpose() + Bj * C * Bj.transpose();
 
     //Save timestamp
-    //append_odometry(pose_odometry, cov_odometry);
+    append_odometry(pose_odometry, cov_odometry);
 }
 
 //GET AND SET FUNCTIONS

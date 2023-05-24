@@ -4,6 +4,7 @@
 #include "lib/ravLidar.hpp"
 #include "lib/odometry.hpp"
 #include "lib/positionUpdate.hpp"
+#include "lib/writeToFile.hpp"
 #include "odometry.hpp"
 #include "pid.hpp"
 #include <time.h>
@@ -101,6 +102,7 @@ void init_robot(){
     VectorXf start_pose(3);
     start_pose << start_pos[0], start_pos[1], start_pos[2];
     cout << "start_pose: " << start_pose << endl;
+    init_filewriter();
     init_odometry(start_pose);
     initLidar();
 }
@@ -136,7 +138,6 @@ void followBox(float d){
  * Behaviour of robot
  * Default behaviour: 
  */
- 
 int collectBoxes(){
     chrono :: high_resolution_clock :: time_point start = chrono::high_resolution_clock::now();
 
@@ -208,7 +209,6 @@ int collectBoxes(){
                     go_to(home);
                     goto exit;
                 }
-
                 if(blocks_taken == 0){
                     cv::destroyAllWindows();
                     go_forward(230);
@@ -218,7 +218,20 @@ int collectBoxes(){
                 }
             }
             if(identity[i] == 1){
-
+                int ifobstacle = -1;
+                for (int j = 0; j < boxes.size(); j++){
+                    if (identity[j] == -6 && boxes[j].width > boxes[i].width && abs(find_d(image, boxes[j])) < 0.3){ // If not an obstacle
+                        // Check if the beginning is less or the end is more
+                        if (boxes[j].x < boxes[i].x && boxes[j].x + boxes[j].width > boxes[i].x + boxes[i].width){
+                            ifobstacle = 1;
+                        }
+                    }
+                }
+                if(ifobstacle != -1){
+                    call_motors(300, -300);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                    continue;
+                }
                 float d = find_d(image, boxes[i]);
                 cout << "d: " << d << endl;
                 followBox(d);
@@ -228,23 +241,15 @@ int collectBoxes(){
                 blocks_taken = 1;
             }
             if(identity[i] == 0){
-                call_motors(250, -250);
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            }
-            else if(identity[i] == 0 && blocks_taken == 1){
-                call_motors(-250, 250);
+                call_motors(300, -300);
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
         }
 
         //if no box is found, spin in place
 
-        if(blocks_taken == 1){
-            call_motors(-250, 250);
-        }
-        else{
-            call_motors(250, -250);
-        }
+
+        call_motors(300, -300);
 
     }
 

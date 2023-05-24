@@ -9,6 +9,7 @@
 using namespace std;
 using namespace Eigen;
 
+void init_filewriter();
 void append_odometry(VectorXf pos, MatrixXf cov);
 void append_cox(VectorXf pos, MatrixXf cov);
 void append_kalman(VectorXf pos, MatrixXf cov);
