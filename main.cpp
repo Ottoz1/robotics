@@ -166,6 +166,8 @@ int collectBoxes(){
         return -1;
     }
 
+    int scouting_speed = 250;
+
     while(1){
 
         whileLoop:
@@ -228,7 +230,7 @@ int collectBoxes(){
                     }
                 }
                 if(ifobstacle != -1){
-                    call_motors(300, -300);
+                    call_motors(scouting_speed, -scouting_speed);
                     std::this_thread::sleep_for(std::chrono::milliseconds(500));
                     continue;
                 }
@@ -241,7 +243,7 @@ int collectBoxes(){
                 blocks_taken = 1;
             }
             if(identity[i] == 0){
-                call_motors(300, -300);
+                call_motors(scouting_speed, -scouting_speed);
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
         }
@@ -249,7 +251,7 @@ int collectBoxes(){
         //if no box is found, spin in place
 
 
-        call_motors(300, -300);
+        call_motors(scouting_speed, -scouting_speed);
 
     }
 
@@ -263,6 +265,7 @@ int collectBoxes(){
 
     th1.join();
     th2.join();
+    th3.join();
 
     return 1;
 
