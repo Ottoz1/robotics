@@ -4,6 +4,6 @@
 #include <stdio.h>
 #include "units.hpp"
 
-VectorXf kalman_combine_pose(VectorXf pos1, VectorXf pos2, MatrixXf cov1, MatrixXf cov2);
+VectorXf kalman_combine_pos(VectorXf pos1, VectorXf pos2, MatrixXf cov1, MatrixXf cov2);
 MatrixXf kalman_combine_cov(MatrixXf cov1, MatrixXf cov2);
 void run_kalman();
